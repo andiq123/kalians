@@ -1,0 +1,24 @@
+<div class="input-group mb-3 " *ngIf="type !== 'select'">
+    <label [for]="label" class="input-group-text">{{label}}</label>
+    <input [type]="type" [formControl]="$any(ngControl.control)" class="form-control" [id]="label">
+</div>
+
+<div class="form-group mb-3" *ngIf="type === 'select'">
+    <label class="form-label">Category</label>
+    <select class="form-control" [formControl]="$any(ngControl.control)">
+        <option>Select an option</option>
+        <option *ngFor="let category of categories" [value]="category.id">{{category.name}}</option>
+    </select>
+</div>
+
+<div class="text-danger" *ngIf="$any(ngControl.control).touched && $any(ngControl.control).errors">
+    <div *ngIf="$any(ngControl.control).errors['minlength'] as minlength">
+        {{label}} must be at least {{minlength.requiredLength}} characters long.
+    </div>
+    <div *ngIf="$any(ngControl.control).errors['required'] as required">
+        {{label}} is required
+    </div>
+    <div *ngIf="$any(ngControl.control).errors['min'] as required">
+        {{label}} has to be minimum {{required.min}}
+    </div>
+</div>

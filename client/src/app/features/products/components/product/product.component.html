@@ -1,0 +1,21 @@
+<div class="product">
+    <div class="product-image">
+        <img [src]="product.image && apiUrl + product.image || 'assets/no-product-image.png'" alt="product">
+    </div>
+    <div class="product-details">
+        <div class="product-title"> <b> {{ product.name | titlecase }}</b></div>
+        <div class="product-description">{{ product.description | titlecase }}</div>
+        <div class="product-price">{{ product.price | currency: 'EUR' }}</div>
+        <div class="product-quantity">
+            <b>In stock: {{ product.inStockQuantity }}</b>
+        </div>
+        <div class="actions d-flex btn-group gap-2 mb-2">
+            <button class="btn btn-success" (click)="onIncrement()"><i class="fas fa-plus-square"></i></button>
+            <button class="btn btn-secondary" (click)="onDecrement()"><i class="fas fa-minus-square"></i></button>
+        </div>
+        <div class="row">
+            <button class="btn btn-secondary mt-3" [routerLink]="'edit/'+product.id">Edit</button>
+            <button class="btn btn-secondary mt-3" (click)="onDelete()">Delete</button>
+        </div>
+    </div>
+</div>

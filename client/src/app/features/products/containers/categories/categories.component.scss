@@ -1,0 +1,26 @@
+.categories {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .card {
+    width: 50%;
+    box-shadow: 1px 1px 10px 2px rgba(214, 211, 211, 0.75);
+    .card-body {
+      display: flex;
+      justify-content: space-between;
+      button {
+        background-color: rgb(245, 91, 91);
+        outline: none;
+        border: none;
+      }
+    }
+  }
+
+  .newCategory {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+  }
+}

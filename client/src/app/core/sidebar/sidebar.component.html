@@ -1,0 +1,36 @@
+<div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white bg-dark">
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span class="fs-4">Kalians
+
+        </span>
+    </a>
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+            <button routerLink="/products/create" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+                class="nav-link btn-block text-align-start" style="width: 100%; text-align: start;">
+                Create new product
+            </button>
+        </li>
+        <li class="nav-item">
+            <button routerLink="/products" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+                class="nav-link  btn-block text-align-start" style="width: 100%; text-align: start;">
+                Products
+            </button>
+        </li>
+    </ul>
+    <hr>
+    <div class="btn-group" dropdown [dropup]="true">
+        <button id="button-dropup" dropdownToggle type="button" class="btn btn-primary dropdown-toggle"
+            aria-controls="dropdown-dropup">
+            Admin <span class="caret"></span>
+        </button>
+        <ul id="dropdown-dropup" *dropdownMenu class="dropdown-menu" role="menu" aria-labelledby="button-dropup">
+            <li role="menuitem"><a class="dropdown-item" routerLink="products/categories">Categories</a></li>
+            <li class="divider dropdown-divider"></li>
+            <li role="menuitem"><a class="dropdown-item" routerLink="auth/login">Sign in</a>
+            <li role="menuitem"><a class="dropdown-item" (click)="signOut()">Sign out</a>
+            </li>
+        </ul>
+    </div>
+</div>

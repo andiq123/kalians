@@ -1,0 +1,67 @@
+/* eslint-disable prettier/prettier */
+import { EntityRepository, Repository } from 'typeorm';
+import { ProductCreateDto } from '../dto/product-create.dto';
+import { ProductSearchDto } from '../dto/product-search.dto';
+import { ProductsViewDto } from '../dto/products-view.dto';
+import { Category } from '../entities/category.entity';
+import { Product } from '../entities/product.entity';
+
+@EntityRepository(Product)
+export class ProductsRepository extends Repository<Product> {
+  async getProducts({
+    name,
+    limit,
+    offset,
+    category,
+  }: ProductSearchDto): Promise<ProductsViewDto> {
+    const query = this.createQueryBuilder('product');
+
+    if (name) {
+      query.andWhere('LOWER(product.name) like LOWER(:name)', {
+        name: `%${name}%`,
+      });
+    }
+
+    if (category) {
+      query.where({ category });
+    }
+
+    if (limit) {
+      query.limit(limit);
+    }
+    if (offset) {
+      query.offset(offset);
+    }
+    const count = await query.getCount();
+    return { count, items: await query.getMany() };
+  }
+
+  async getProduct(id: string): Promise<Product> {
+    return this.findOne(id);
+  }
+
+  async createProduct(
+    product: ProductCreateDto,
+    category: Category,
+  ): Promise<Product> {
+    const newProduct = this.create({ ...product, category });
+    await this.save(newProduct);
+    return newProduct;
+  }
+
+  async updatePhoto(id: string, image: string): Promise<Product> {
+    const product = await this.getProduct(id);
+    image = 'images/' + image;
+    const productToReturn = await this.save({ ...product, image });
+    return productToReturn;
+  }
+
+  async updateProduct(id: string, product: Product): Promise<Product> {
+    return this.save({ ...product, id });
+  }
+
+  async setInStockValue(id: string, value: number): Promise<Product> {
+    const product = await this.getProduct(id);
+    return this.save({ ...product, inStockQuantity: value });
+  }
+}

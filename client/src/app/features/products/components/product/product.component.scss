@@ -1,0 +1,42 @@
+.product {
+  width: 200px;
+  padding: 30px;
+  background-color: rgb(231, 224, 224);
+  border-radius: 20px;
+  box-shadow: 1px 1px 10px 3px rgba(231, 226, 226, 0.75);
+  .product-image {
+    width: 150px;
+    height: 200px;
+    border-radius: 20px;
+    overflow: hidden;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  .product-details {
+    .product-description {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.slide-in {
+  animation: slide-in 1s ease-in-out forwards;
+}
+
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-20%);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

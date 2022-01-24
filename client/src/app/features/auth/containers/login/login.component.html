@@ -1,0 +1,38 @@
+<div class="login" [@openClose]="isOpen ? 'open': 'closed'">
+    <form [formGroup]="formGroup" (submit)="onSubmit()">
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="email" formControlName="username" class="form-control">
+            <div *ngIf="formGroup.controls['username'] as username">
+                <div *ngIf="username.touched && username.errors">
+                    <div class="text-danger" *ngIf="username.errors['required']">
+                        Username is required
+                    </div>
+                    <div class="text-danger" *ngIf="username.errors['minlength'] as length">
+                        Username must be at least {{length.requiredLength}} characters long
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" formControlName="password">
+            <div *ngIf="formGroup.controls['password'] as password">
+                <div *ngIf="password.touched && password.errors">
+                    <div class="text-danger" *ngIf="password.errors['required']">
+                        Password is required
+                    </div>
+                    <div class="text-danger" *ngIf="password.errors['minlength'] as length">
+                        Password must be at least {{length.requiredLength}} characters long
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="formGroup.invalid">
+            <div *ngIf="loading" class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <span *ngIf="!loading">Sign in</span>
+        </button>
+    </form>
+</div>

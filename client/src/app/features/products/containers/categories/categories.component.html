@@ -1,0 +1,13 @@
+<div class="categories">
+    <div class="card mt-3" *ngFor="let category of categories">
+        <div class="card-body">
+            <h5 class="card-title">{{category.name | titlecase}}</h5>
+            <button class="btn btn-primary" (click)="deleteCategory(category.id)">Delete</button>
+        </div>
+    </div>
+    <div class="newCategory">
+        <input type="text" [(ngModel)]="newCategoryValue" class="form-control">
+        <button class="btn btn-primary" (click)="createCategory()">Create</button>
+    </div>
+
+</div>

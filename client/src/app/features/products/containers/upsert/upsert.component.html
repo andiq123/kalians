@@ -1,0 +1,24 @@
+<div class="create">
+    <form *ngIf="formGroup" [formGroup]="formGroup" (submit)="onSubmit()" enctype="multipart/form-data">
+        <app-text-input [formControl]="$any(formGroup.controls['name'])" label="Name"></app-text-input>
+        <app-text-input [formControl]="$any(formGroup.controls['description'])" label="Description"></app-text-input>
+        <app-text-input [formControl]="$any(formGroup.controls['price'])" label="Price" type="number"></app-text-input>
+        <app-text-input [formControl]="$any(formGroup.controls['inStockQuantity'])" label="Quantity" type="number">
+        </app-text-input>
+        <app-text-input [formControl]="$any(formGroup.controls['categoryId'])" label="Category" type="select"
+            [categories]="categories">
+        </app-text-input>
+        <div class="product-image">
+            <img [src]="product?.image && apiUrl + product?.image || 'assets/no-product-image.png'"
+                [alt]="formGroup.controls['name'].value" />
+        </div>
+        <div class="input-group mt-3">
+            <input type="file" class="form-control" (change)="onFileChange($event)">
+            <label class="input-group-text">Upload</label>
+        </div>
+        <div class="btn-group d-flex gap-2 mt-4">
+            <button type="submit" [disabled]="formGroup.invalid" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-secondary" routerLink="/products">Cancel</button>
+        </div>
+    </form>
+</div>

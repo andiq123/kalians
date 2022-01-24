@@ -1,0 +1,22 @@
+.products-container {
+  height: 100%;
+  width: 100%;
+  .form-group {
+    padding-top: 10px;
+    margin: 0 auto;
+    width: 30%;
+  }
+  .no-products {
+    margin: 0 auto;
+    width: fit-content;
+    margin-top: 20%;
+  }
+  .products {
+    display: flex;
+    flex-flow: row wrap;
+    margin: 0 auto;
+    gap: 20px;
+    padding: 10px;
+    width: 100%;
+  }
+}
