@@ -14,6 +14,13 @@ import { AuthModule } from 'src/auth/auth.module';
     TypeOrmModule.forFeature([ProductsRepository, Category]),
     MulterModule.register({
       dest: './public/api/images',
+      limits: { fileSize: 1000000 },
+      fileFilter: (req, file, cb) => {
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+          return cb(new Error('Please upload an image'), false);
+        }
+        cb(null, true);
+      },
     }),
   ],
   providers: [ProductsService, CategoryService],

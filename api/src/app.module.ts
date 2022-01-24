@@ -1,9 +1,10 @@
-import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
-import { ServeStaticModule } from '@nestjs/serve-static';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
-import { FrontEndMiddleware } from './frontend.middleware';
+
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { FrontEndMiddleware } from './frontend.middleware';
       autoLoadEntities: true,
     }),
     ServeStaticModule.forRoot({
-      rootPath: './public',
+      rootPath: join(__dirname, '..', 'public'),
+      exclude: ['/api*'],
     }),
     ProductsModule,
     AuthModule,

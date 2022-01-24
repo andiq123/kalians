@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { unlink } from 'fs';
 import { ProductCreateDto } from '../dto/product-create.dto';
 import { ProductSearchDto } from '../dto/product-search.dto';
 import { ProductUpdateDto } from '../dto/product-update.dto';
@@ -70,7 +71,12 @@ export class ProductsService {
   }
 
   async delete(id: string): Promise<void> {
-    await this.findOne(id);
+    const product = await this.findOne(id);
+    if (product.image) {
+      unlink(`./public/api/${product.image}`, (err) => {
+        console.log("couldn't delete image");
+      });
+    }
     await this.productsRepository.delete(id);
   }
 

@@ -24,9 +24,10 @@ import { Category } from './entities/category.entity';
 import { Product } from './entities/product.entity';
 import { CategoryService } from './services/category.service';
 import { ProductsService } from './services/products.service';
+import * as Jimp from 'jimp';
+import { join } from 'path';
 
-@UseGuards(AuthGuard())
-@Controller('api/products')
+@Controller('products')
 export class ProductsController {
   constructor(
     private productsService: ProductsService,
@@ -43,12 +44,14 @@ export class ProductsController {
     return this.productsService.findOne(id);
   }
 
+  @UseGuards(AuthGuard())
   @Post()
   async createProduct(@Body() product: ProductCreateDto): Promise<Product> {
     const category = await this.categoryService.getOne(product.categoryId);
     return this.productsService.create(product, category);
   }
 
+  @UseGuards(AuthGuard())
   @Patch(':id')
   async updateProduct(
     @Param('id') id: string,
@@ -58,31 +61,39 @@ export class ProductsController {
     return this.productsService.update(id, product, category);
   }
 
+  @UseGuards(AuthGuard())
   @Post('file/:id')
   @UseInterceptors(FileInterceptor('file'))
   async updateProductImage(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    const basePath = join(__dirname, '../../public/api/images', file.filename);
+    const image = await Jimp.read(basePath);
+    await image.resize(200, Jimp.AUTO).writeAsync(basePath);
     const product = await this.productsService.updatePhoto(id, file.filename);
     return product;
   }
 
+  @UseGuards(AuthGuard())
   @Delete(':id')
   delete(@Param('id') id: string) {
     return this.productsService.delete(id);
   }
 
+  @UseGuards(AuthGuard())
   @Get('increment/:id')
   async incrementInStock(@Param('id') id: string) {
     return this.productsService.incrementInStock(id);
   }
 
+  @UseGuards(AuthGuard())
   @Get('decrement/:id')
   async decrementInStock(@Param('id') id: string) {
     return this.productsService.decrementInStock(id);
   }
 
+  @UseGuards(AuthGuard())
   @Get('set/:id')
   async setInStockValue(
     @Param('id') id: string,
@@ -91,6 +102,7 @@ export class ProductsController {
     return this.productsService.setInStockValue(id, value);
   }
 
+  @UseGuards(AuthGuard())
   @Get('add/:id')
   async addInStockValue(
     @Param('id') id: string,
@@ -110,10 +122,13 @@ export class ProductsController {
     return this.categoryService.getOne(id);
   }
 
+  @UseGuards(AuthGuard())
   @Post('sub/categories')
   createCategory(@Body() category: CategoryCreateDto) {
     return this.categoryService.create(category);
   }
+
+  @UseGuards(AuthGuard())
   @Delete('sub/categories/:id')
   deleteCategory(@Param('id') id: string): Promise<void> {
     return this.categoryService.delete(id);

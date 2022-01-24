@@ -5,7 +5,8 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { Component, OnInit } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { delay, finalize, tap, timer } from 'rxjs';
@@ -43,11 +44,17 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    @Inject(PLATFORM_ID)
+    private platformId: Object
   ) {}
 
   ngOnInit(): void {
     this.populateForm();
+
+    if (isPlatformBrowser(this.platformId) && localStorage.getItem('token')) {
+      this.router.navigateByUrl('products');
+    }
   }
 
   populateForm() {

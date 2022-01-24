@@ -1,5 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Category } from './category.entity';
 
 @Entity()
@@ -25,5 +31,6 @@ export class Product {
   @ManyToOne((type) => Category, (category) => category.products, {
     eager: true,
   })
+  @JoinTable()
   category: Category;
 }

@@ -25,6 +25,9 @@ export class RegisterComponent implements OnInit {
         this.passwordMissmatch = data.password !== data.confirmPassword;
       }
     });
+    if (localStorage.getItem('token')) {
+      this.router.navigateByUrl('products');
+    }
   }
 
   populateForm() {
