@@ -13,7 +13,7 @@ import { AuthInterceptor } from './features/auth/_interceptor/auth.interceptor';
 @NgModule({
   declarations: [AppComponent],
   imports: [
-    BrowserModule,
+    BrowserModule.withServerTransition({ appId: 'serverApp' }),
     AppRoutingModule,
     BrowserAnimationsModule,
     CoreModule,

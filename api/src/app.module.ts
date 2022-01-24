@@ -27,10 +27,10 @@ import { FrontEndMiddleware } from './frontend.middleware';
   providers: [],
 })
 export class AppModule {
-  configure(frontEnd: MiddlewareConsumer) {
-    frontEnd.apply(FrontEndMiddleware).forRoutes({
-      path: '*',
-      method: RequestMethod.ALL,
-    });
-  }
+  // configure(frontEnd: MiddlewareConsumer) {
+  //   frontEnd.apply(FrontEndMiddleware).forRoutes({
+  //     path: '*',
+  //     method: RequestMethod.ALL,
+  //   });
+  // }
 }

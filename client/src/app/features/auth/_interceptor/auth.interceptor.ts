@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -6,11 +6,11 @@ import {
   HttpInterceptor,
 } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor() {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   intercept(
     request: HttpRequest<unknown>,
@@ -18,9 +18,12 @@ export class AuthInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<unknown>> {
     const data = localStorage.getItem('token');
 
-    const AuthRequest = request.clone({
-      headers: request.headers.set('Authorization', 'Bearer ' + data),
-    });
-    return next.handle(AuthRequest);
+    if (isPlatformBrowser(this.platformId)) {
+      const AuthRequest = request.clone({
+        headers: request.headers.set('Authorization', 'Bearer ' + data),
+      });
+      return next.handle(AuthRequest);
+    }
+    return next.handle(request);
   }
 }

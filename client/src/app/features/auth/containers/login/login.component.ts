@@ -71,7 +71,7 @@ export class LoginComponent implements OnInit {
       .subscribe(() => {
         this.isOpen = false;
 
-        // this.router.navigateByUrl('products');
+        this.router.navigateByUrl('products');
       });
   }
 }
