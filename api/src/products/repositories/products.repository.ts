@@ -15,7 +15,7 @@ export class ProductsRepository extends Repository<Product> {
     offset,
     category,
   }: ProductSearchDto): Promise<ProductsViewDto> {
-    let query = this.createQueryBuilder('product');
+    const query = this.createQueryBuilder('product');
 
     if (name) {
       query.andWhere('LOWER(product.name) like LOWER(:name)', {
@@ -55,7 +55,7 @@ export class ProductsRepository extends Repository<Product> {
   async updatePhoto(id: string, image: string): Promise<Product> {
     const product = await this.getProduct(id);
     if (product.image && product.image !== '') {
-      unlink(`./public/api/${product.image}`, (err) => {
+      unlink(`./public/api/${product.image}`, () => {
         console.log("couldn't delete image");
       });
     }

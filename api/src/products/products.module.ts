@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { ProductsService } from './services/products.service';
 import { ProductsController } from './products.controller';
@@ -25,6 +26,6 @@ import { AuthModule } from 'src/auth/auth.module';
   ],
   providers: [ProductsService, CategoryService],
   controllers: [ProductsController],
-  exports: [],
+  exports: [ProductsService, CategoryService],
 })
 export class ProductsModule {}

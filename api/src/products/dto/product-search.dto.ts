@@ -5,18 +5,18 @@ export class ProductSearchDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  name: string;
+  name?: string;
 
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  category: string;
+  category?: string;
 
   @IsNumber()
   @IsOptional()
-  limit: number;
+  limit?: number = 10;
 
   @IsNumber()
   @IsOptional()
-  offset: number;
+  offset?: number = 0;
 }

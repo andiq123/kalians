@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module';
@@ -5,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -24,6 +26,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     }),
     ProductsModule,
     AuthModule,
+    TelegramModule,
   ],
   controllers: [],
   providers: [],
