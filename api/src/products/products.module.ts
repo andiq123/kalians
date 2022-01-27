@@ -8,11 +8,20 @@ import { Category } from './entities/category.entity';
 import { CategoryService } from './services/category.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { AuthModule } from 'src/auth/auth.module';
+import { Cart, CartItemLocal } from './entities/cart.entity';
+import { CartService } from './services/cart.service';
+import { CartsController } from './carts.controller';
 
 @Module({
+  controllers: [ProductsController, CartsController],
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([ProductsRepository, Category]),
+    TypeOrmModule.forFeature([
+      ProductsRepository,
+      Category,
+      Cart,
+      CartItemLocal,
+    ]),
     MulterModule.register({
       dest: './public/api/images',
       limits: { fileSize: 1000000 },
@@ -24,8 +33,7 @@ import { AuthModule } from 'src/auth/auth.module';
       },
     }),
   ],
-  providers: [ProductsService, CategoryService],
-  controllers: [ProductsController],
-  exports: [ProductsService, CategoryService],
+  providers: [ProductsService, CategoryService, CartService],
+  exports: [ProductsService, CategoryService, CartService],
 })
 export class ProductsModule {}

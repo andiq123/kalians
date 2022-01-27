@@ -7,10 +7,13 @@ import { PaginationModule } from 'ngx-bootstrap/pagination';
 import { RouterModule } from '@angular/router';
 import { TextInputComponent } from './common/text-input/text-input.component';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ToastrModule } from 'ngx-toastr';
+import { CollapseModule } from 'ngx-bootstrap/collapse';
 
 const BootstrapComponents = [
   BsDropdownModule.forRoot(),
   PaginationModule.forRoot(),
+  CollapseModule.forRoot(),
 ];
 
 @NgModule({
@@ -21,6 +24,11 @@ const BootstrapComponents = [
     RouterModule,
     ReactiveFormsModule,
     HttpClientModule,
+    ToastrModule.forRoot({
+      timeOut: 10000,
+      positionClass: 'toast-bottom-right',
+      preventDuplicates: true,
+    }),
   ],
   exports: [
     SidebarComponent,
@@ -29,6 +37,7 @@ const BootstrapComponents = [
     RouterModule,
     TextInputComponent,
     HttpClientModule,
+    ToastrModule,
   ],
 })
 export class CoreModule {}

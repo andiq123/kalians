@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../auth.service';
 
@@ -15,7 +16,8 @@ export class RegisterComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -46,8 +48,13 @@ export class RegisterComponent implements OnInit {
     this.authService
       .register(username, password)
       .pipe(finalize(() => (this.loading = false)))
-      .subscribe(() => {
-        this.router.navigateByUrl('products');
+      .subscribe({
+        next: () => {
+          this.router.navigateByUrl('products');
+        },
+        error: (err) => {
+          this.toastr.error(err.error.message);
+        },
       });
   }
 }

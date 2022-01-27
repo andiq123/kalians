@@ -3,7 +3,11 @@ import { Context } from 'telegraf';
 
 export async function addIsTyping(ctx: Context, next: any) {
   await ctx.replyWithChatAction('typing');
-  await next();
+  try {
+    await next();
+  } catch (error) {
+    await ctx.reply('Sa produs o eroare');
+  }
 }
 // chat: {
 //   id: 407882729,

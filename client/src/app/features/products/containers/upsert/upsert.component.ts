@@ -1,6 +1,7 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ProductCreateDto } from '../../dto/product-create.dto';
@@ -21,12 +22,14 @@ export class UpsertComponent implements OnInit, OnDestroy {
   apiUrl = environment.apiUrl;
   product?: Product;
   formGroup?: FormGroup;
+
   constructor(
     private fb: FormBuilder,
     private activeRouter: ActivatedRoute,
     private router: Router,
     private productsService: ProductsService,
-    private categoriesService: CategoriesService
+    private categoriesService: CategoriesService,
+    private toastr: ToastrService
   ) {}
 
   ngOnDestroy(): void {
@@ -105,11 +108,15 @@ export class UpsertComponent implements OnInit, OnDestroy {
         categoryId,
       };
       this.subscriptions.push(
-        this.productsService
-          .createProduct(productDto, image)
-          .subscribe((product) => {
+        this.productsService.createProduct(productDto, image).subscribe({
+          next: (product) => {
             this.router.navigateByUrl('/products');
-          })
+          },
+          error: (err) => {
+            this.router.navigateByUrl('/products');
+            this.toastr.error(err.error.message);
+          },
+        })
       );
     } else {
       const productDto: ProductUpdateDto = {
@@ -121,11 +128,15 @@ export class UpsertComponent implements OnInit, OnDestroy {
         categoryId,
       };
       this.subscriptions.push(
-        this.productsService
-          .updateProduct(productDto, image)
-          .subscribe((product) => {
+        this.productsService.updateProduct(productDto, image).subscribe({
+          next: (product) => {
             this.router.navigateByUrl('/products');
-          })
+          },
+          error: (err) => {
+            this.router.navigateByUrl('/products');
+            this.toastr.error(err.error.message);
+          },
+        })
       );
     }
   }

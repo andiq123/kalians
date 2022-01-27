@@ -1,0 +1,45 @@
+<div class="cart-item card-body" (click)="isCollapsed = !isCollapsed">
+  <h5 class="card-title">#{{cart.id}}</h5>
+  <div class="card-text"><b>Status: </b>{{cart.status | titlecase}}</div>
+  <button class="btn btn-primary" *ngIf="cart.status==='pending'" (click)="onUpdateStatus()">Finish</button>
+</div>
+<div id="collapseBasic" [collapse]="isCollapsed">
+  <h3>Products:</h3>
+  <div class="card" *ngFor="let cartItem  of cart.cartItems ">
+    <div class="card-body">
+      <p class="card-text"><b>Produs: </b> {{cartItem.product.name | titlecase}}</p>
+      <p class="card-text"><b>Cantitate: </b> {{cartItem.quantity }}</p>
+      <p class="card-text"><b>Pret:</b> {{cartItem.product.price | currency}}</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <p class="card-text"><b>Total:</b> {{cart.totalPrice | currency}}</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- {
+    "id": 1,
+    "totalPrice": 213,
+    "createdAt": "2022-01-26T18:18:40.068Z",
+    "cartItems": [
+      {
+        "id": "5bc606dc-0f89-412d-8079-15a27d92df3c",
+        "quantity": 1,
+        "product": {
+          "id": "4767e4e1-e090-4ec6-87c4-2e47f1715cd5",
+          "name": "sad",
+          "description": "asdsa",
+          "price": 213,
+          "image": "images/8e70a4affefec18c52028749a31a44f9",
+          "inStockQuantity": 123,
+          "category": {
+            "id": "abb806de-978e-4ccc-a499-18c4c42dd249",
+            "name": "sandu"
+          }
+        }
+      }
+    ]
+  } -->

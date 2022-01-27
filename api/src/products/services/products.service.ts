@@ -54,7 +54,7 @@ export class ProductsService {
   async update(
     id: string,
     product: ProductUpdateDto,
-    category: Category,
+    category?: Category,
   ): Promise<void> {
     await this.findOne(id);
     const { name, description, inStockQuantity, price } = product;

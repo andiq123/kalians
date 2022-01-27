@@ -5,38 +5,17 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { delay, finalize, tap, timer } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  animations: [
-    trigger('openClose', [
-      // ...
-      state(
-        'open',
-        style({
-          transform: 'translateY(0)',
-          opacity: 1,
-        })
-      ),
-      state(
-        'closed',
-        style({
-          transform: 'translateY(-100%)',
-          opacity: 0,
-        })
-      ),
-      transition('* => closed', [animate('0.5s')]),
-      transition('* => open', [animate('0.5s')]),
-    ]),
-  ],
 })
 export class LoginComponent implements OnInit {
   formGroup!: FormGroup;
@@ -45,14 +24,12 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    @Inject(PLATFORM_ID)
-    private platformId: Object
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
     this.populateForm();
-
-    if (isPlatformBrowser(this.platformId) && localStorage.getItem('token')) {
+    if (localStorage.getItem('token')) {
       this.router.navigateByUrl('products');
     }
   }
@@ -75,10 +52,14 @@ export class LoginComponent implements OnInit {
           this.loading = false;
         })
       )
-      .subscribe(() => {
-        this.isOpen = false;
-
-        this.router.navigateByUrl('products');
+      .subscribe({
+        next: () => {
+          this.isOpen = false;
+          this.router.navigateByUrl('products');
+        },
+        error: (err) => {
+          this.toastr.error(err.error.message);
+        },
       });
   }
 }

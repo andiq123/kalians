@@ -9,4 +9,6 @@ export enum ResponseCallbackCommands {
   add = 'add',
   remove = 'remove',
   category = 'cats',
+  checkout = 'checkout',
+  notInStock = 'notInStock',
 }

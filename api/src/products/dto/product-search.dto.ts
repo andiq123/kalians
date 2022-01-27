@@ -5,6 +5,11 @@ export class ProductSearchDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  ids?: string[];
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
   name?: string;
 
   @IsString()

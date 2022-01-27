@@ -10,7 +10,7 @@ export class CartItem {
   }
 }
 
-export class Cart {
+export class CartCache {
   id: string;
   items: CartItem[] = [];
 }

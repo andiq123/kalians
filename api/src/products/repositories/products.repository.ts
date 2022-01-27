@@ -14,25 +14,30 @@ export class ProductsRepository extends Repository<Product> {
     limit,
     offset,
     category,
+    ids,
   }: ProductSearchDto): Promise<ProductsViewDto> {
     const query = this.createQueryBuilder('product');
 
-    if (name) {
-      query.andWhere('LOWER(product.name) like LOWER(:name)', {
-        name: `%${name}%`,
-      });
-    }
+    if (ids) {
+      query.andWhere('product.id IN (:...ids)', { ids });
+    } else {
+      if (name) {
+        query.andWhere('LOWER(product.name) like LOWER(:name)', {
+          name: `%${name}%`,
+        });
+      }
 
-    if (category) {
-      query.where({ category });
-    }
+      if (category) {
+        query.where({ category });
+      }
 
-    if (limit) {
-      query.limit(limit);
-    }
+      if (limit) {
+        query.limit(limit);
+      }
 
-    if (offset) {
-      query.offset(offset);
+      if (offset) {
+        query.offset(offset);
+      }
     }
 
     const data = await query.getManyAndCount();

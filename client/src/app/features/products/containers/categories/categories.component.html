@@ -6,8 +6,7 @@
         </div>
     </div>
     <div class="newCategory">
-        <input type="text" [(ngModel)]="newCategoryValue" class="form-control">
+        <input type="text" [(ngModel)]="newCategoryValue" class="form-control" (keyup.enter)="createCategory()">
         <button class="btn btn-primary" (click)="createCategory()">Create</button>
     </div>
-
 </div>

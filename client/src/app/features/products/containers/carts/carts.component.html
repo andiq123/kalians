@@ -1,0 +1,10 @@
+<div class="carts">
+    <div class="card mt-3" *ngFor="let cart of carts">
+        <app-cart [cart]="cart" (updateStatus)="onUpdateStatus($event)"></app-cart>
+    </div>
+</div>
+
+<!-- <button type="button" class="btn btn-primary" (click)="isCollapsed = !isCollapsed" [attr.aria-expanded]="!isCollapsed"
+    aria-controls="collapseBasic">Toggle collapse
+</button>
+<hr> -->

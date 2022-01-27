@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ResponseModel } from './modles/response.interface';
+import { ResponseModel } from './models/response.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -35,5 +35,9 @@ export class AuthService {
           localStorage.setItem('token', res.token);
         })
       );
+  }
+
+  check() {
+    return this.http.get<{ username: string }>(this.baseUrl + 'check');
   }
 }

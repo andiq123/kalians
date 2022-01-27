@@ -5,7 +5,7 @@ import { ProductsModule } from 'src/products/products.module';
 import { AppUpdate } from './app.update';
 import { addIsTyping } from './middleware/add-isTyping.middleware';
 
-import { CartService } from './services/cart.services';
+import { CartServiceCache } from './services/cart-cache.services';
 
 @Module({
   imports: [
@@ -20,6 +20,6 @@ import { CartService } from './services/cart.services';
       max: 100,
     }),
   ],
-  providers: [AppUpdate, CartService],
+  providers: [AppUpdate, CartServiceCache],
 })
 export class TelegramModule {}
