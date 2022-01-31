@@ -9,7 +9,7 @@ import { Cart } from '../../models/cart.interface';
 })
 export class CartComponent implements OnInit {
   @Input() cart!: Cart;
-  isCollapsed = true;
+  isCollapsed = false;
 
   @Output() updateStatus = new Subject<string>();
   constructor() {}
@@ -18,5 +18,12 @@ export class CartComponent implements OnInit {
 
   onUpdateStatus() {
     this.updateStatus.next(this.cart.id.toString());
+  }
+
+  getMultipliedPrice(id: string) {
+    return (
+      this.cart.cartItems.find((x) => x.id === id)!.product.price! *
+      this.cart.cartItems.find((x) => x.id === id)!.quantity
+    );
   }
 }

@@ -14,5 +14,7 @@ export const configValidationSchema = Joi.object({
   CACHE_TIME: Joi.number().default(3600),
   CACHE_MAX: Joi.number().default(100),
   JWT_SECRET: Joi.string().required(),
-  BASE_URL: Joi.string().default('http://localhost:3000/api/'),
+  CLOUDINARY_API_SECRET: Joi.string().required(),
+  CLOUDINARY_API_KEY: Joi.string().required(),
+  CLOUDINARY_CLOUD_NAME: Joi.string().required(),
 });

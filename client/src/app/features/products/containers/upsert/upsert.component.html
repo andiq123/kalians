@@ -9,8 +9,7 @@
             [categories]="categories">
         </app-text-input>
         <div class="product-image">
-            <img [src]="product?.image && apiUrl + product?.image || 'assets/no-product-image.png'"
-                [alt]="formGroup.controls['name'].value" />
+            <img [src]="product?.image || 'assets/no-product-image.png'" [alt]="formGroup.controls['name'].value" />
         </div>
         <div class="input-group mt-3">
             <input type="file" class="form-control" (change)="onFileChange($event)">

@@ -6,6 +6,8 @@ export interface Cart {
   totalPrice: number;
   createdAt: Date;
   status: string;
+  clientName: string;
+  phoneNumber: string;
 }
 
 export interface CartItem {

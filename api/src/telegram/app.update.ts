@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Update, Ctx, Start, Help, On, Hears, Command } from 'nestjs-telegraf';
+import { Update, Ctx, Start, Help, On, Hears } from 'nestjs-telegraf';
 import { ProductsViewDto } from 'src/products/dto/products-view.dto';
 import { CategoryService } from 'src/products/services/category.service';
 import { ProductsService } from 'src/products/services/products.service';
@@ -58,7 +58,7 @@ export class AppUpdate {
           const cartId = ctx.update.callback_query.from.id;
           const search: SearchData = {
             categoryId: response.id,
-            pageNumber: 1,
+            pageNumber: 0,
             pageSize: 5,
           };
           await this.cartService.setSearch(cartId, search);
@@ -67,6 +67,16 @@ export class AppUpdate {
         break;
       }
       case ResponseCallbackCommands.viewProduct: {
+        const cartId = ctx.update.callback_query.from.id;
+        const searchDto = await this.cartService.getSearch(cartId);
+        console.log(searchDto);
+        try {
+          console.log(searchDto.pageMessageId);
+          if (searchDto.pageMessageId) {
+            await ctx.deleteMessage(searchDto.pageMessageId);
+            console.log(searchDto.pageMessageId);
+          }
+        } catch (error) {}
         await this.handleViewProduct(ctx, response.id);
         await ctx.answerCbQuery();
         break;
@@ -252,6 +262,9 @@ export class AppUpdate {
           inline_keyboard: [this.get_checkout_layout(cartId)],
         },
       });
+      await ctx.reply(
+        'Daca modificati cantiatea unui produs, pentru a vedea pretul total, apasati din nou pe coș',
+      );
     }
   }
 
@@ -275,20 +288,21 @@ export class AppUpdate {
       limit: searchData.pageSize,
       offset: searchData.pageNumber,
     });
+
     const totalPages = Math.ceil(products.count / searchData.pageSize);
     if (products.items.length === 0) {
       await ctx.reply('Nu am gasit nici un produs');
     } else {
       await this.listProducts(ctx, products);
 
-      await ctx.reply(
-        'Pagina ' + searchData.pageNumber + ' din ' + totalPages,
+      const pageButton = await ctx.reply(
+        `Pagina ${searchData.pageNumber + 1} din ${totalPages}`,
         {
           reply_markup: {
             disable_notification: true,
             inline_keyboard: [
               [
-                searchData.pageNumber > 1
+                searchData.pageNumber > 0
                   ? {
                       text: '<<',
                       callback_data: JSON.stringify({
@@ -296,7 +310,7 @@ export class AppUpdate {
                       }),
                     }
                   : { text: '-', callback_data: JSON.stringify('') },
-                searchData.pageNumber < totalPages
+                searchData.pageNumber < totalPages - 1
                   ? {
                       text: '>>',
                       callback_data: JSON.stringify({
@@ -309,6 +323,11 @@ export class AppUpdate {
           },
         },
       );
+      const searchDataToSave = {
+        ...searchData,
+        pageMessageId: pageButton.message_id,
+      };
+      await this.cartService.setSearch(cartId, searchDataToSave);
     }
   }
 
@@ -338,14 +357,12 @@ export class AppUpdate {
     await this.cartService.setSearch(cartId, searchDto);
   }
 
-  async handleViewProduct(ctx: Context, productId: string) {
+  async handleViewProduct(ctx: any, productId: string) {
     await ctx.deleteMessage();
-
-    const baseUrl = this.cartService.getBaseUrl;
     const product = await this.productsService.findOne(productId);
 
     await ctx.replyWithPhoto(
-      { url: baseUrl + product.image },
+      { url: product.image },
       {
         caption: `${product.name} | ${product.price} lei | ${
           product.description

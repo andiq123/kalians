@@ -1,12 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable, of, switchMap, take } from 'rxjs';
+import { ToastrService } from 'ngx-toastr';
+import { finalize, Observable, of, switchMap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ProductCreateDto } from '../dto/product-create.dto';
 import { ProductUpdateDto } from '../dto/product-update.dto';
 import { ProductsViewDto } from '../dto/products-view.dto';
 import { SearchFiltersDto } from '../dto/search-filters.dto';
-import { ProductCategory } from '../models/product-category.interface';
 import { Product } from '../models/product.interface';
 
 @Injectable({
@@ -14,7 +14,7 @@ import { Product } from '../models/product.interface';
 })
 export class ProductsService {
   apiUrl = environment.apiUrl;
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private toastr: ToastrService) {}
 
   getProducts(filters: SearchFiltersDto): Observable<ProductsViewDto> {
     let params = new HttpParams();
@@ -36,16 +36,20 @@ export class ProductsService {
   }
 
   createProduct(productDto: ProductCreateDto, image: File) {
+    this.toastr.info('Creating product...');
     return this.http.post<Product>(`${this.apiUrl}products`, productDto).pipe(
       switchMap((product) => {
+        this.toastr.info('Product created');
         if (!image) return of(product);
         const formData = new FormData();
         formData.append('file', image!);
+        this.toastr.info('Uploading image...');
         return this.http.post(
           `${this.apiUrl}products/file/${product.id}`,
           formData
         );
-      })
+      }),
+      finalize(() => this.toastr.info('Image Uploaded'))
     );
   }
 

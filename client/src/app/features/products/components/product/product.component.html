@@ -1,6 +1,6 @@
 <div class="product">
     <div class="product-image">
-        <img [src]="product.image && apiUrl + product.image || 'assets/no-product-image.png'" alt="product">
+        <img [src]="product.image || 'assets/no-product-image.png'" alt="product">
     </div>
     <div class="product-details">
         <div class="product-title"> <b> {{ product.name | titlecase }}</b></div>

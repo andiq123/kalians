@@ -9,6 +9,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { TelegramModule } from './telegram/telegram.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -45,9 +46,9 @@ import { configValidationSchema } from './config.schema';
     ProductsModule,
     AuthModule,
     TelegramModule,
+    CloudinaryModule,
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule {
   // configure(frontEnd: MiddlewareConsumer) {

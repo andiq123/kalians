@@ -14,6 +14,7 @@ export class SearchData {
   pageSize: number;
   pageNumber: number;
   categoryId: string;
+  pageMessageId?: string;
   messageId?: string;
 }
 

@@ -21,7 +21,6 @@ export class CartServiceCache {
     username: this.configService.get('ADMIN_USERNAME'),
     phoneNumber: this.configService.get('ADMIN_PHONE'),
   };
-  baseUrl = this.configService.get('BASE_URL');
 
   MAX_ITEMS = 20;
   constructor(
@@ -32,10 +31,6 @@ export class CartServiceCache {
 
   get getAdminDetails() {
     return this.adminDetails;
-  }
-
-  get getBaseUrl() {
-    return this.baseUrl;
   }
 
   async getCart(cartId: string): Promise<CartCache> {

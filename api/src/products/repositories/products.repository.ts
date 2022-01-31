@@ -59,12 +59,6 @@ export class ProductsRepository extends Repository<Product> {
 
   async updatePhoto(id: string, image: string): Promise<Product> {
     const product = await this.getProduct(id);
-    if (product.image && product.image !== '') {
-      unlink(`./public/api/${product.image}`, () => {
-        console.log("couldn't delete image");
-      });
-    }
-    image = 'images/' + image;
     const productToReturn = await this.save({ ...product, image });
     return productToReturn;
   }
