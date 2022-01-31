@@ -2,6 +2,7 @@
 import * as Joi from '@hapi/joi';
 
 export const configValidationSchema = Joi.object({
+  PORT: Joi.number().default(3000),
   STAGE: Joi.string().required(),
   DB_HOST: Joi.string().required(),
   DB_PORT: Joi.number().default(5432),
@@ -13,5 +14,5 @@ export const configValidationSchema = Joi.object({
   CACHE_TIME: Joi.number().default(3600),
   CACHE_MAX: Joi.number().default(100),
   JWT_SECRET: Joi.string().required(),
-  BASE_URL: Joi.string().required(),
+  BASE_URL: Joi.string().default('http://localhost:3000/api/'),
 });
