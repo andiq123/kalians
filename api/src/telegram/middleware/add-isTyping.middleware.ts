@@ -6,12 +6,6 @@ export async function addIsTyping(ctx: Context, next: any) {
   try {
     await next();
   } catch (error) {
-    await ctx.reply('Sa produs o eroare');
+    await ctx.reply('Sa produs o eroare, scrie /help.');
   }
 }
-// chat: {
-//   id: 407882729,
-//   first_name: 'Дынь',
-//   username: 'Djokoby',
-//   type: 'private'
-// },

@@ -15,5 +15,5 @@ export class CartCreateDto {
 
   @IsString()
   @IsNotEmpty()
-  nume: string;
+  clientName: string;
 }

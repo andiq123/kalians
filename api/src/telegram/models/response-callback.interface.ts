@@ -11,4 +11,7 @@ export enum ResponseCallbackCommands {
   category = 'cats',
   checkout = 'checkout',
   notInStock = 'notInStock',
+  viewProduct = 'view',
+  nextPage = 'nPage',
+  previousPage = 'pPage',
 }

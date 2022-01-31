@@ -74,7 +74,7 @@ export class ProductsService {
   async delete(id: string): Promise<void> {
     const product = await this.findOne(id);
     if (product.image) {
-      unlink(`./public/api/${product.image}`, (err) => {
+      unlink(`./public/api/${product.image}`, () => {
         console.log("couldn't delete image");
       });
     }
@@ -94,7 +94,7 @@ export class ProductsService {
   }
 
   async setInStockValue(id: string, value: number): Promise<Product> {
-    const product = await this.findOne(id);
+    await this.findOne(id);
     return await this.productsRepository.setInStockValue(id, value);
   }
 

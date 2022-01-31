@@ -10,7 +10,17 @@ export class CartItem {
   }
 }
 
+export class SearchData {
+  pageSize: number;
+  pageNumber: number;
+  categoryId: string;
+  messageId?: string;
+}
+
 export class CartCache {
   id: string;
   items: CartItem[] = [];
+  phoneNumber: string;
+  clientName: string;
+  searchData: SearchData;
 }

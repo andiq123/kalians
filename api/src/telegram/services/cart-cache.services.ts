@@ -1,20 +1,42 @@
 /* eslint-disable prettier/prettier */
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
+import { config } from 'process';
 import { CartCreateDto } from 'src/products/dto/cart-create.dto';
 import { ProductViewDto } from 'src/products/dto/product-view.dto';
 import { Cart } from 'src/products/entities/cart.entity';
 import { CartService } from 'src/products/services/cart.service';
-import { CartCache, CartItem } from '../models/cart-cache.interface';
+import {
+  CartCache,
+  CartItem,
+  SearchData,
+} from '../models/cart-cache.interface';
 
 @Injectable()
 export class CartServiceCache {
+  adminDetails = {
+    id: this.configService.get('ADMIN_ID'),
+    username: this.configService.get('ADMIN_USERNAME'),
+    phoneNumber: this.configService.get('ADMIN_PHONE'),
+  };
+  baseUrl = this.configService.get('BASE_URL');
+
   MAX_ITEMS = 20;
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private cartService: CartService,
+    private configService: ConfigService,
   ) {}
+
+  get getAdminDetails() {
+    return this.adminDetails;
+  }
+
+  get getBaseUrl() {
+    return this.baseUrl;
+  }
 
   async getCart(cartId: string): Promise<CartCache> {
     return await this.cacheManager.get(cartId);
@@ -40,8 +62,6 @@ export class CartServiceCache {
           : itemCart.quantity + 1;
 
       const isMoreThanQuantity = product.inStockQuantity - newQuantity <= 0;
-      console.log(newQuantity, product.inStockQuantity);
-      console.log(isMoreThanQuantity);
       if (isMoreThanQuantity) return null;
 
       itemCart.quantity = newQuantity;
@@ -85,17 +105,46 @@ export class CartServiceCache {
         productId: x.item.id,
         quantity: x.quantity,
       })),
-      phoneNumber: '0726807303',
-      nume: 'George',
+      phoneNumber: cart.phoneNumber,
+      clientName: cart.clientName,
     };
 
     const createdCart = await this.cartService.create(createCart);
-
     await this.cacheManager.del(cartId);
     return createdCart;
   }
+
+  async setPhoneNumber(cartId: string, number: string) {
+    const cart = await this.getCart(cartId);
+    if (!cart) return;
+
+    cart.phoneNumber = number;
+    await this.cacheManager.set(cartId, cart);
+    return cart.phoneNumber;
+  }
+
+  async setClientName(cartId: string, name: string) {
+    const cart = await this.getCart(cartId);
+    if (!cart) return;
+
+    cart.clientName = name;
+    await this.cacheManager.set(cartId, cart);
+    return cart.clientName;
+  }
+
+  async setSearch(cartId: string, searchData: SearchData) {
+    let cart = await this.getCart(cartId);
+    if (!cart) {
+      cart = new CartCache();
+    }
+    cart.searchData = searchData;
+    await this.cacheManager.set(cartId, cart);
+    return cart.searchData;
+  }
+
+  async getSearch(cartId: string) {
+    const cart = await this.getCart(cartId);
+    if (!cart) return;
+    return cart.searchData;
+  }
 }
-// CartCache {
-//   items: [ CartItem { item: [Object], quantity: 2 } ],
-//   id: 574037714
-// }

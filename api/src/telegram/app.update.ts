@@ -4,7 +4,8 @@ import { ProductsViewDto } from 'src/products/dto/products-view.dto';
 import { CategoryService } from 'src/products/services/category.service';
 import { ProductsService } from 'src/products/services/products.service';
 import { Context } from 'telegraf';
-import { CartItem } from './models/cart-cache.interface';
+import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
+import { CartItem, SearchData } from './models/cart-cache.interface';
 
 import {
   ResponseCallback,
@@ -21,14 +22,14 @@ export class AppUpdate {
   ) {}
 
   @Start()
-  async start(@Ctx() ctx: Context) {
+  async start(@Ctx() ctx: any) {
     await ctx.reply(
       'Te salut, bun venit in magazin, pentru a naviga foloseste comenzile afisate)',
       {
         reply_markup: {
-          keyboard: [
-            [{ text: '/products' }, { text: '/search' }, { text: '/cart' }],
-          ],
+          resize_keyboard: true,
+          input_field_placeholder: 'Cauta produs',
+          keyboard: [[{ text: 'Catalog de produse 🏪' }, { text: 'Coș 🛒' }]],
         },
       },
     );
@@ -36,13 +37,13 @@ export class AppUpdate {
 
   @Help()
   async help(@Ctx() ctx: any) {
-    await ctx.reply('Foloseste /products pentru a vedea produsele');
-    await ctx.reply('Foloseste /cart pentru a vedea cosul');
+    await ctx.reply(
+      'Foloseste butoanele de mai jos pentru a naviga.\n daca ai dificultati poti contacta un administrator',
+    );
     await ctx.reply('Comenzi: ', {
       reply_markup: {
-        keyboard: [
-          [{ text: '/products' }, { text: '/search' }, { text: '/cart' }],
-        ],
+        resize_keyboard: true,
+        keyboard: [[{ text: 'Catalog de produse 🏪' }, { text: 'Coș 🛒' }]],
       },
     });
   }
@@ -50,23 +51,55 @@ export class AppUpdate {
   @On('callback_query')
   async on(@Ctx() ctx: any) {
     // get the message
-    const data: ResponseCallback = JSON.parse(ctx.callbackQuery.data);
-
-    switch (data.command) {
+    const response: ResponseCallback = JSON.parse(ctx.callbackQuery.data);
+    switch (response.command) {
       case ResponseCallbackCommands.category: {
-        await this.handleShowProductsByCategory(ctx, data);
+        if (response.id) {
+          const cartId = ctx.update.callback_query.from.id;
+          const search: SearchData = {
+            categoryId: response.id,
+            pageNumber: 1,
+            pageSize: 5,
+          };
+          await this.cartService.setSearch(cartId, search);
+        }
+        await this.handleShowProductsByCategory(ctx, !response.id);
+        break;
+      }
+      case ResponseCallbackCommands.viewProduct: {
+        await this.handleViewProduct(ctx, response.id);
+        await ctx.answerCbQuery();
+        break;
+      }
+      case ResponseCallbackCommands.previousPage: {
+        const cartId = ctx.update.callback_query.from.id;
+        const searchData = await this.cartService.getSearch(cartId);
+        searchData.pageNumber = searchData.pageNumber - 1;
+        await this.cartService.setSearch(cartId, searchData);
+        await this.handleShowProductsByCategory(ctx, true);
+        break;
+      }
+      case ResponseCallbackCommands.nextPage: {
+        const cartId = ctx.update.callback_query.from.id;
+        const searchData = await this.cartService.getSearch(cartId);
+        searchData.pageNumber = searchData.pageNumber + 1;
+        await this.cartService.setSearch(cartId, searchData);
+        await this.handleShowProductsByCategory(ctx, true);
         break;
       }
       case ResponseCallbackCommands.buy: {
         // const message = ctx.update.callback_query.message;
-
         const cartId: string = ctx.update.callback_query.from.id;
-        const cartItem = await this.handleAddToCart(ctx, data, cartId);
-
+        const cartItem = await this.handleAddToCart(ctx, response.id, cartId);
         if (cartId && cartItem) {
-          if (cartItem.quantity === 1) {
+          if (cartItem.quantity > 0) {
             await ctx.editMessageReplyMarkup({
-              inline_keyboard: [this.show_buy_layout(null, 'In Cos')],
+              inline_keyboard: [
+                this.show_buy_layout(
+                  cartItem.item.id,
+                  `In Coș (${cartItem.quantity})`,
+                ),
+              ],
             });
           }
 
@@ -80,10 +113,12 @@ export class AppUpdate {
       }
       case ResponseCallbackCommands.add: {
         const cartId: string = ctx.update.callback_query.from.id;
-        const cartItem = await this.handleAddToCart(ctx, data, cartId);
+        const cartItem = await this.handleAddToCart(ctx, response.id, cartId);
         if (cartItem) {
           await ctx.editMessageText(
-            `Produs: ${cartItem.item.name} | Pret: ${cartItem.item.price} | Cantitate: ${cartItem.quantity}`,
+            `Produs: ${cartItem.item.name} | Pret: ${cartItem.item.price} x ${
+              cartItem.quantity
+            } = ${cartItem.item.price * cartItem.quantity}\n`,
             {
               reply_markup: {
                 inline_keyboard: [this.show_cartItem_layout(cartItem.item.id)],
@@ -97,13 +132,17 @@ export class AppUpdate {
         }
         break;
       }
-
       case ResponseCallbackCommands.remove: {
         const cartId: string = ctx.update.callback_query.from.id;
-        const cartItem = await this.handleRemoveFromCart(ctx, data, cartId);
+        const cartItem = await this.handleRemoveFromCart(
+          ctx,
+          response.id,
+          cartId,
+        );
         if (cartItem) {
           switch (cartItem.quantity) {
             case 0:
+              await ctx.deleteMessage();
               await ctx.reply(
                 `Produs: ${cartItem.item.name} | Sters din in cos. `,
               );
@@ -111,7 +150,11 @@ export class AppUpdate {
 
             default:
               await ctx.editMessageText(
-                `Produs: ${cartItem.item.name} | Pret: ${cartItem.item.price} | Cantitate: ${cartItem.quantity}`,
+                `Produs: ${cartItem.item.name} | Pret: ${
+                  cartItem.item.price
+                } x ${cartItem.quantity} = ${
+                  cartItem.item.price * cartItem.quantity
+                }\n`,
                 {
                   reply_markup: {
                     inline_keyboard: [
@@ -126,11 +169,9 @@ export class AppUpdate {
         break;
       }
       case ResponseCallbackCommands.checkout: {
-        const cart = await this.cartService.submitCart(data.id);
-        await ctx.reply(
-          `Cosul a fost plasat. | Pret total: ${cart.totalPrice} lei.
-           Anunta vanzatoru cu codul comenzi: ${cart.id}`,
-        );
+        //get cart id
+        const cartId: string = ctx.update.callback_query.from.id;
+        await this.handleCheckOut(cartId, ctx);
         break;
       }
       default: {
@@ -140,16 +181,45 @@ export class AppUpdate {
     }
   }
 
-  @Command('/search')
-  async search(@Ctx() ctx: any) {
-    const searchCriteria = ctx.message.text.split('/search')[1].trim();
-    const products = await this.productsService.findAll({
-      name: searchCriteria,
-    });
-    await this.listProducts(ctx, products);
+  @On('contact')
+  async repospond(@Ctx() ctx: any) {
+    const { phone_number, first_name, user_id } = ctx.update.message.contact;
+
+    await this.cartService.setClientName(user_id, first_name);
+    await this.cartService.setPhoneNumber(user_id, phone_number);
+    await ctx.reply(
+      'Perfect, acum poti sa trimiti comanda sau sa te intorci la catalogul de produse!',
+      {
+        reply_markup: {
+          resize_keyboard: true,
+          keyboard: [
+            [
+              { text: 'Trimite Coș' },
+              { text: 'Catalog de produse 🏪' },
+              { text: 'Coș 🛒' },
+            ],
+          ],
+        },
+      },
+    );
   }
 
-  @Hears('/products')
+  @Hears('Trimite Coș')
+  async checkOut(@Ctx() ctx: any) {
+    const id = ctx.update.message.from.id;
+    await this.handleCheckOut(id, ctx);
+  }
+
+  // @Command('/search')
+  // async search(@Ctx() ctx: any) {
+  //   const searchCriteria = ctx.message.text.split('/search')[1].trim();
+  //   const products = await this.productsService.findAll({
+  //     name: searchCriteria,
+  //   });
+  //   await this.listProducts(ctx, products);
+  // }
+
+  @Hears('Catalog de produse 🏪')
   async hears(@Ctx() ctx: Context) {
     const categories = await this.categoryService.getAll();
     const buttons = categories.map((x) => ({
@@ -165,7 +235,7 @@ export class AppUpdate {
     });
   }
 
-  @Hears('/cart')
+  @Hears('Coș 🛒')
   async cart(@Ctx() ctx: any) {
     const cartId = ctx.update.message.from.id;
     const cart = await this.cartService.getCart(cartId);
@@ -186,91 +256,218 @@ export class AppUpdate {
   }
 
   //handlers
-  listCartItems(ctx: any, items: CartItem[]) {
-    items.forEach(async (x) => {
+  async handleShowProductsByCategory(ctx: any, deleteMessage = false) {
+    if (deleteMessage) {
+      await ctx.deleteMessage();
+    }
+
+    const cartId = ctx.update.callback_query.from.id;
+    const searchData = await this.cartService.getSearch(cartId);
+
+    try {
+      if (searchData.messageId) {
+        await ctx.deleteMessage(searchData.messageId);
+      }
+    } catch (error) {}
+
+    const products = await this.productsService.findAll({
+      category: searchData.categoryId,
+      limit: searchData.pageSize,
+      offset: searchData.pageNumber,
+    });
+    const totalPages = Math.ceil(products.count / searchData.pageSize);
+    if (products.items.length === 0) {
+      await ctx.reply('Nu am gasit nici un produs');
+    } else {
+      await this.listProducts(ctx, products);
+
       await ctx.reply(
-        `Produs: ${x.item.name} | Pret: ${x.item.price} | Cantitate: ${x.quantity}`,
+        'Pagina ' + searchData.pageNumber + ' din ' + totalPages,
         {
           reply_markup: {
-            inline_keyboard: [this.show_cartItem_layout(x.item.id)],
+            disable_notification: true,
+            inline_keyboard: [
+              [
+                searchData.pageNumber > 1
+                  ? {
+                      text: '<<',
+                      callback_data: JSON.stringify({
+                        command: ResponseCallbackCommands.previousPage,
+                      }),
+                    }
+                  : { text: '-', callback_data: JSON.stringify('') },
+                searchData.pageNumber < totalPages
+                  ? {
+                      text: '>>',
+                      callback_data: JSON.stringify({
+                        command: ResponseCallbackCommands.nextPage,
+                      }),
+                    }
+                  : { text: '-', callback_data: JSON.stringify('') },
+              ],
+            ],
           },
         },
       );
+    }
+  }
+
+  async listProducts(ctx: any, products: ProductsViewDto) {
+    const buttons: InlineKeyboardButton[][] = products.items.map((x) => [
+      {
+        text: `Produs: ${x.name} | Pret: ${x.price} Lei | ${
+          x.inStockQuantity > 0 ? 'In stoc' : 'Nu este in stoc'
+        }`,
+        callback_data: JSON.stringify({
+          id: x.id,
+          command: ResponseCallbackCommands.viewProduct,
+        }),
+      },
+    ]);
+
+    const message = await ctx.reply('---Produse disponibile:---', {
+      disable_notification: true,
+      reply_markup: {
+        inline_keyboard: buttons,
+      },
     });
+
+    const cartId = ctx.update.callback_query.from.id;
+    const searchDto = await this.cartService.getSearch(cartId);
+    searchDto.messageId = message.message_id;
+    await this.cartService.setSearch(cartId, searchDto);
+  }
+
+  async handleViewProduct(ctx: Context, productId: string) {
+    await ctx.deleteMessage();
+
+    const baseUrl = this.cartService.getBaseUrl;
+    const product = await this.productsService.findOne(productId);
+
+    await ctx.replyWithPhoto(
+      { url: baseUrl + product.image },
+      {
+        caption: `${product.name} | ${product.price} lei | ${
+          product.description
+        } | ${product.inStockQuantity > 0 ? 'In Stock' : 'Nu este in stock'}`,
+        reply_markup: {
+          inline_keyboard: [this.show_buy_layout(product.id, 'Cumpara')],
+        },
+      },
+    );
+  }
+
+  async handleCheckOut(cartId: string, ctx: Context) {
+    const cartBeforeSubmit = await this.cartService.getCart(cartId);
+    if (!cartBeforeSubmit) {
+      await ctx.reply('Cosul este gol');
+      return;
+    } else if (!cartBeforeSubmit.phoneNumber && !cartBeforeSubmit.clientName) {
+      await ctx.reply(
+        'Pentru a putea lua legatura, am nevoie de date de contact. esti de acord sa mi le oferi?',
+        {
+          reply_markup: {
+            one_time_keyboard: true,
+            keyboard: [[{ text: 'Da, sunt de acord', request_contact: true }]],
+          },
+        },
+      );
+      return;
+    }
+
+    const cart = await this.cartService.submitCart(cartId);
+    await ctx.reply(
+      `Cosul a fost plasat cu success.\n
+       Produse Cumparate:\n
+      ${cartBeforeSubmit.items.map(
+        (x) =>
+          `Produs: ${x.item.name} | Pret: ${x.item.price} x ${x.quantity} = ${
+            x.item.price * x.quantity
+          }\n`,
+      )}
+       Pret total: ${cart.totalPrice} lei\n
+       Anunta vanzatoru cu codul comenzi: ${cart.id}`,
+      {
+        reply_markup: {
+          resize_keyboard: true,
+          keyboard: [[{ text: 'Catalog de produse 🏪' }, { text: 'Coș 🛒' }]],
+        },
+      },
+    );
+
+    // mesaj for admin
+    const adminData = this.cartService.getAdminDetails;
+    await ctx.telegram.sendMessage(
+      adminData.id,
+      `A fost plasata o noua comanda.\n
+      Produse Cumparate:\n
+      ${cartBeforeSubmit.items.map(
+        (x) =>
+          `Produs: ${x.item.name} | Pret: ${x.item.price} x ${x.quantity} = ${
+            x.item.price * x.quantity
+          }\n`,
+      )}
+      Pret total: ${cart.totalPrice} lei\n
+      Codul comenzi: ${cart.id}\n
+      Client: ${cart.clientName}\n
+      Telefon: ${cart.phoneNumber}\n`,
+      {
+        reply_markup: {
+          keyboard: [[{ text: '/pula' }, { text: '/hazz john' }]],
+        },
+      },
+    );
+  }
+
+  async listCartItems(ctx: any, items: CartItem[]) {
+    for (let i = 0; i < items.length; i++) {
+      await ctx.reply(
+        `Produs: ${items[i].item.name} | Pret: ${items[i].item.price} x ${
+          items[i].quantity
+        } = ${items[i].item.price * items[i].quantity}\n`,
+        {
+          reply_markup: {
+            inline_keyboard: [this.show_cartItem_layout(items[i].item.id)],
+          },
+        },
+      );
+    }
   }
 
   async handleAddToCart(
     ctx: any,
-    data: ResponseCallback,
+    productId: string,
     cartId: string,
   ): Promise<CartItem> {
-    const product = await this.productsService.findOne(data.id);
+    const product = await this.productsService.findOne(productId);
     const cartItem = await this.cartService.addToCart(product, cartId);
     return cartItem;
   }
 
   async handleRemoveFromCart(
     ctx: Context,
-    data: ResponseCallback,
+    productId: string,
     cartId: string,
   ): Promise<CartItem> {
-    const product = await this.productsService.findOne(data.id);
+    const product = await this.productsService.findOne(productId);
     const cartItem = await this.cartService.removeFromCart(product, cartId);
     return cartItem;
-  }
-
-  async handleShowProductsByCategory(ctx: any, data: ResponseCallback) {
-    const products = await this.productsService.findAll({
-      category: data.id,
-    });
-    await this.listProducts(ctx, products);
-  }
-
-  async listProducts(ctx: any, products: ProductsViewDto) {
-    const baseUrl = 'http://localhost:3000/api/';
-    if (products.items.length === 0) {
-      await ctx.reply('Nu am gasit nici un produs');
-    } else {
-      products.items.forEach(async (x) => {
-        await ctx.replyWithPhoto(
-          { url: baseUrl + x.image },
-          {
-            caption: `${x.name} | ${x.price} lei | ${x.description} | ${
-              x.inStockQuantity > 0 ? 'In Stock' : 'Nu este in stock'
-            }`,
-            reply_markup: {
-              inline_keyboard: [
-                x.inStockQuantity > 0
-                  ? this.show_buy_layout(x.id, 'Cumpara')
-                  : this.show_buy_layout_not_in_stock(),
-              ],
-            },
-          },
-        );
-      });
-    }
   }
 
   //buttons markup
   show_buy_layout(id: string, text: string) {
     return [
       {
+        text: 'Back',
+        callback_data: JSON.stringify({
+          command: ResponseCallbackCommands.category,
+        }),
+      },
+      {
         text,
         callback_data: JSON.stringify({
           id: id,
           command: ResponseCallbackCommands.buy,
-        }),
-      },
-    ];
-  }
-
-  show_buy_layout_not_in_stock() {
-    return [
-      {
-        text: 'Nu este in stock',
-        callback_data: JSON.stringify({
-          id: '',
-          command: ResponseCallbackCommands.notInStock,
         }),
       },
     ];
@@ -291,14 +488,14 @@ export class AppUpdate {
   show_cartItem_layout(id: string) {
     return [
       {
-        text: 'Adauga',
+        text: '+',
         callback_data: JSON.stringify({
           id: id,
           command: ResponseCallbackCommands.add,
         }),
       },
       {
-        text: 'Sterge',
+        text: '-',
         callback_data: JSON.stringify({
           id: id,
           command: ResponseCallbackCommands.remove,

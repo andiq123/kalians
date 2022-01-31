@@ -1,4 +1,6 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,10 +12,15 @@ import { UsersServices } from './services/users.service';
 @Module({
   controllers: [AuthController],
   imports: [
+    ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: 'super secret ebanarotsdaad',
-      signOptions: { expiresIn: '60d' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: '60d' },
+      }),
     }),
     TypeOrmModule.forFeature([UsersRepository]),
   ],

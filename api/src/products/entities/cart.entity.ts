@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import {
   Column,
@@ -16,7 +17,7 @@ export class Cart {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @OneToMany((type) => CartItemLocal, (cartItemLocal) => cartItemLocal.cart, {
+  @OneToMany((_type) => CartItemLocal, (cartItemLocal) => cartItemLocal.cart, {
     eager: true,
   })
   cartItems: CartItemLocal[];
@@ -25,7 +26,7 @@ export class Cart {
   totalPrice: number;
 
   @Column()
-  nume: string;
+  clientName: string;
 
   @Column()
   phoneNumber: string;

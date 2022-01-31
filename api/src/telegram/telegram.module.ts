@@ -1,4 +1,5 @@
 import { CacheModule, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { ProductsModule } from 'src/products/products.module';
 
@@ -9,17 +10,28 @@ import { CartServiceCache } from './services/cart-cache.services';
 
 @Module({
   imports: [
+    ConfigModule,
     ProductsModule,
-    TelegrafModule.forRoot({
-      token: '5064551951:AAFv2-QBu0PnZCEcLexGXkHRlNz1XYhZWCU',
-      botName: 'romania_kalian_bot',
-      middlewares: [addIsTyping],
+    TelegrafModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        token: configService.get('TELEGRAM_BOT_TOKEN'),
+        botName: configService.get('TELEGRAM_BOT_NAME'),
+        middlewares: [addIsTyping],
+      }),
     }),
-    CacheModule.register({
-      ttl: 600,
-      max: 100,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get('CACHE_TIME'),
+        max: configService.get('CACHE_MAX'),
+      }),
     }),
   ],
   providers: [AppUpdate, CartServiceCache],
 })
 export class TelegramModule {}
+// ttl: 600,
+//       max: 100,

@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartCreateDto } from '../dto/cart-create.dto';
+import { CartSearchDto } from '../dto/cart-search.dto';
 import { Cart, CartItemLocal } from '../entities/cart.entity';
 import { ProductsService } from './products.service';
 
@@ -35,9 +36,10 @@ export class CartService {
     const newCart = {
       createdAt: new Date(),
       totalPrice: totalPrice,
-      nume: cart.nume,
+      clientName: cart.clientName,
       phoneNumber: cart.phoneNumber,
       status: 'pending',
+      cartItems: items,
     };
 
     const cartToCreate = this.cartRepository.create(newCart);
@@ -54,12 +56,47 @@ export class CartService {
     return createdCart;
   }
 
-  async getAll(): Promise<Cart[]> {
-    const carts = await this.cartRepository.find();
-    if (carts.length === 0) {
-      throw new NotFoundException('No carts found');
+  async getAll(
+    cartSearch?: CartSearchDto,
+  ): Promise<{ count: number; items: Cart[] }> {
+    const query = this.cartRepository.createQueryBuilder('cart');
+    if (cartSearch?.status) {
+      query.andWhere('cart.status = :status', { status: cartSearch.status });
     }
-    return carts;
+    if (cartSearch?.id) {
+      query.andWhere('cart.id = :id', { id: cartSearch.id });
+    }
+    if (cartSearch?.clientName) {
+      query.andWhere('LOWER(cart.clientName) like LOWER(:nume)', {
+        nume: `%${cartSearch.clientName}%`,
+      });
+    }
+    if (cartSearch?.phoneNumber) {
+      query.andWhere('LOWER(cart.phoneNumber) like LOWER(:phoneNumber)', {
+        phoneNumber: `%${cartSearch.phoneNumber}%`,
+      });
+    }
+    if (cartSearch.date) {
+      query.andWhere('cart.createdAt = :createdAt', {
+        createdAt: cartSearch.date,
+      });
+    }
+
+    if (cartSearch.limit) {
+      query.limit(cartSearch.limit);
+    }
+    if (cartSearch.offset) {
+      query.offset(cartSearch.offset);
+    }
+
+    query.leftJoinAndSelect('cart.cartItems', 'cartItems');
+    query.leftJoinAndSelect('cartItems.product', 'product');
+
+    query.orderBy('cart.id', 'DESC');
+
+    const [items, count] = await query.getManyAndCount();
+
+    return { items, count };
   }
 
   async getOne(id: string): Promise<Cart> {
