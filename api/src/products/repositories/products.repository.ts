@@ -1,5 +1,4 @@
 /* eslint-disable prettier/prettier */
-import { unlink } from 'fs';
 import { EntityRepository, Repository } from 'typeorm';
 import { ProductCreateDto } from '../dto/product-create.dto';
 import { ProductSearchDto } from '../dto/product-search.dto';
@@ -57,8 +56,7 @@ export class ProductsRepository extends Repository<Product> {
     return newProduct;
   }
 
-  async updatePhoto(id: string, image: string): Promise<Product> {
-    const product = await this.getProduct(id);
+  async updatePhoto(product: Product, image: string): Promise<Product> {
     const productToReturn = await this.save({ ...product, image });
     return productToReturn;
   }

@@ -18,7 +18,6 @@ async function bootstrap() {
   );
 
   app.setGlobalPrefix('api');
-  // app.enableCors();
   const port = process.env.PORT;
   await app.listen(port, () => {
     console.log('Server running on port ' + port);

@@ -25,9 +25,6 @@ import { Category } from './entities/category.entity';
 import { Product } from './entities/product.entity';
 import { CategoryService } from './services/category.service';
 import { ProductsService } from './services/products.service';
-import * as Jimp from 'jimp';
-import { join } from 'path';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @UseGuards(AuthGuard())
 @Controller('products')
@@ -35,7 +32,6 @@ export class ProductsController {
   constructor(
     private productsService: ProductsService,
     private categoryService: CategoryService,
-    private cloudinaryService: CloudinaryService,
   ) {}
 
   @Get()
@@ -70,9 +66,7 @@ export class ProductsController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     try {
-      const result = await this.cloudinaryService.uploadImage(file);
-
-      const product = await this.productsService.updatePhoto(id, result.url);
+      const product = await this.productsService.updatePhoto(id, file);
       return product;
     } catch (error) {
       throw new BadRequestException(

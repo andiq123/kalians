@@ -16,8 +16,12 @@ export class CloudinaryService {
     });
   }
 
-  async getImage(imageName: string) {
-    const image = v2.image(imageName);
-    return image;
+  async deleteImage(name: string) {
+    return new Promise((resolve, reject) => {
+      v2.uploader.destroy(name, (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      });
+    });
   }
 }

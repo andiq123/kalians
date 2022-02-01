@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { unlink } from 'fs';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { ProductCreateDto } from '../dto/product-create.dto';
 import { ProductSearchDto } from '../dto/product-search.dto';
 import { ProductUpdateDto } from '../dto/product-update.dto';
@@ -16,6 +16,7 @@ export class ProductsService {
   constructor(
     @InjectRepository(ProductsRepository)
     private productsRepository: ProductsRepository,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   findAll(filters: ProductSearchDto): Promise<ProductsViewDto> {
@@ -67,16 +68,19 @@ export class ProductsService {
     });
   }
 
-  updatePhoto(id: string, image: string): Promise<Product> {
-    return this.productsRepository.updatePhoto(id, image);
+  async updatePhoto(id: string, file: Express.Multer.File): Promise<Product> {
+    const product = await this.productsRepository.getProduct(id);
+    if (product.image) {
+      await this.cloudinaryService.deleteImage(product.image);
+    }
+    const result = await this.cloudinaryService.uploadImage(file);
+    return this.productsRepository.updatePhoto(product, result.url);
   }
 
   async delete(id: string): Promise<void> {
     const product = await this.findOne(id);
     if (product.image) {
-      unlink(`./public/api/${product.image}`, () => {
-        console.log("couldn't delete image");
-      });
+      await this.cloudinaryService.deleteImage(product.image);
     }
     await this.productsRepository.delete(id);
   }

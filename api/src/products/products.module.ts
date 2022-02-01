@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsRepository } from './repositories/products.repository';
 import { Category } from './entities/category.entity';
 import { CategoryService } from './services/category.service';
-import { MulterModule } from '@nestjs/platform-express';
 import { AuthModule } from 'src/auth/auth.module';
 import { Cart, CartItemLocal } from './entities/cart.entity';
 import { CartService } from './services/cart.service';
@@ -24,16 +23,6 @@ import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
       Cart,
       CartItemLocal,
     ]),
-    // MulterModule.register({
-    //   dest: './public/api/images',
-    //   limits: { fileSize: 1000000 },
-    //   fileFilter: (req, file, cb) => {
-    //     if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-    //       return cb(new Error('Please upload an image'), false);
-    //     }
-    //     cb(null, true);
-    //   },
-    // }),
   ],
   providers: [ProductsService, CategoryService, CartService],
   exports: [ProductsService, CategoryService, CartService],
