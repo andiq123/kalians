@@ -16,12 +16,8 @@ export class CloudinaryService {
     });
   }
 
-  async deleteImage(name: string) {
-    return new Promise((resolve, reject) => {
-      v2.uploader.destroy(name, (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      });
-    });
+  async deleteImage(link: string): Promise<void> {
+    const name = link.split('/').pop().replace('.jpg', '');
+    http: await v2.uploader.destroy(name);
   }
 }
