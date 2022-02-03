@@ -18,6 +18,6 @@ export class CloudinaryService {
 
   async deleteImage(link: string): Promise<void> {
     const name = link.split('/').pop().replace('.jpg', '');
-    http: await v2.uploader.destroy(name);
+    await v2.uploader.destroy(name);
   }
 }
