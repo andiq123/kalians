@@ -1,20 +1,20 @@
-import { GetCategoriesEndPoint } from '../endpoints/api-endpoints';
+import { GetCategoriesEndPoint } from './endpoints/api-endpoints';
 import { manyAlertsError } from './alerts';
-import { deleteEntity, get, post } from './fetch';
+import { deleteEntity, get, post } from './generic-fetch';
 
-export async function CategoriesGet() {
+export function CategoriesGet() {
 	try {
-		return await get(GetCategoriesEndPoint);
+		return get(GetCategoriesEndPoint);
 	} catch (error) {
-		manyAlertsError(error.message);
+		manyAlertsError(error);
 	}
 }
 
-export async function CreateCategory(name) {
+export function CreateCategory(name) {
 	try {
-		return await post(GetCategoriesEndPoint, { name });
+		return post(GetCategoriesEndPoint, { name });
 	} catch (error) {
-		manyAlertsError(error.message);
+		manyAlertsError(error);
 	}
 }
 
@@ -22,7 +22,6 @@ export async function DeleteCategory(id) {
 	try {
 		await deleteEntity(GetCategoriesEndPoint + '/' + id);
 	} catch (error) {
-		console.log(error);
-		manyAlertsError(error.message);
+		manyAlertsError(error);
 	}
 }

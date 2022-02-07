@@ -1,6 +1,6 @@
-import { GetProductsEndPoint } from '../endpoints/api-endpoints';
+import { GetProductsEndPoint } from './endpoints/api-endpoints';
 import { manyAlertsError } from './alerts';
-import { get, patch, post, uploadImage } from './fetch';
+import { get, patch, post, uploadImage } from './generic-fetch';
 
 export async function GetProducts(searchParams = null) {
 	try {
@@ -35,9 +35,9 @@ export async function UploadPhoto(id, image) {
 	}
 }
 
-export async function Increment(id) {
+export function Increment(id) {
 	try {
-		return await get(`${GetProductsEndPoint}/increment/${id}`);
+		return get(`${GetProductsEndPoint}/increment/${id}`);
 	} catch (error) {
 		manyAlertsError(error);
 	}

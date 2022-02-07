@@ -26,7 +26,7 @@ export enum Messages {
   CartItems = '---Produse in cos:---',
 
   // Empty items
-  EmtpyCart = 'Coșul este gol',
+  EmptyCart = 'Coșul este gol',
   NoProductsFound = 'Nu sa gasit nici un produs',
 
   // Page info

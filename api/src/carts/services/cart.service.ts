@@ -1,12 +1,17 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartCreateDto } from '../dto/cart-create.dto';
 import { CartSearchDto } from '../dto/cart-search.dto';
-import { Cart} from '../entities/cart.entity';
+import { Cart } from '../entities/cart.entity';
 import { ProductsService } from '../../products/services/products.service';
 import { CartItem } from '../entities/cartItem.entity';
+import { CartStatusEnum } from '../enum/cart-status.enum';
 
 @Injectable()
 export class CartService {
@@ -108,15 +113,18 @@ export class CartService {
     return cart;
   }
 
-  async updateStatus(cartId: string) {
+  async updateStatus(cartId: string): Promise<Cart> {
     const cart = await this.getOne(cartId);
+    if (cart.status === CartStatusEnum.COMPLETED) {
+      throw new BadRequestException('Cartul a fost deja finisat');
+    }
     cart.cartItems.forEach(async (x) => {
       const productFromDb = await this.productsService.findOne(x.product.id);
       const newQuantity = (productFromDb.inStockQuantity -= x.quantity);
       await this.productsService.setInStockValue(x.product.id, newQuantity);
     });
-    cart.status = 'completed';
-    await this.cartRepository.save(cart);
-    return cart;
+    cart.status = CartStatusEnum.COMPLETED;
+    const cartFromDb = await this.cartRepository.save(cart);
+    return cartFromDb;
   }
 }

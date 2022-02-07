@@ -6,7 +6,6 @@ import { ProductsService } from 'src/products/services/products.service';
 import { Context } from 'telegraf';
 import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
 import { Messages } from './enum/messages.enum';
-import { CartItem } from './models/cart-cache.interface';
 import {
   ResponseCallback,
   ResponseCallbackCommands,
@@ -19,6 +18,9 @@ import {
   show_cartItem_layout,
 } from './helper/buttons-layouts';
 import { useTemplate } from './helper/template.handler';
+import { SearchService } from './services/search-cache.service';
+import { CartCacheItem } from './models/cart-cache-item.interface';
+import { CommonService } from './services/common.service';
 
 @Update()
 export class AppUpdate {
@@ -26,6 +28,8 @@ export class AppUpdate {
     private categoryService: CategoryService,
     private productsService: ProductsService,
     private cartService: CartServiceCache,
+    private searchService: SearchService,
+    private commonService: CommonService,
   ) {}
 
   @Start()
@@ -61,7 +65,7 @@ export class AppUpdate {
       case ResponseCallbackCommands.category: {
         if (response.id) {
           const cartId = this.getCartId(ctx);
-          await this.cartService.setSearch(cartId, {
+          await this.searchService.set(cartId, {
             categoryId: response.id,
             pageNumber: 0,
             pageSize: 5,
@@ -72,7 +76,7 @@ export class AppUpdate {
       }
       case ResponseCallbackCommands.viewProduct: {
         const cartId = this.getCartId(ctx);
-        const searchDto = await this.cartService.getSearch(cartId);
+        const searchDto = await this.searchService.get(cartId);
 
         //deletes pages message
         try {
@@ -81,24 +85,23 @@ export class AppUpdate {
           }
         } catch (error) {}
 
-        // console.log('miaws');
         await this.handleViewProduct(ctx, response.id);
         await ctx.answerCbQuery();
         break;
       }
       case ResponseCallbackCommands.previousPage: {
         const cartId = this.getCartId(ctx);
-        const searchData = await this.cartService.getSearch(cartId);
+        const searchData = await this.searchService.get(cartId);
         searchData.pageNumber = searchData.pageNumber - 1;
-        await this.cartService.setSearch(cartId, searchData);
+        await this.searchService.set(cartId, searchData);
         await this.handleShowProductsByCategory(ctx, true);
         break;
       }
       case ResponseCallbackCommands.nextPage: {
         const cartId = this.getCartId(ctx);
-        const searchData = await this.cartService.getSearch(cartId);
+        const searchData = await this.searchService.get(cartId);
         searchData.pageNumber = searchData.pageNumber + 1;
-        await this.cartService.setSearch(cartId, searchData);
+        await this.searchService.set(cartId, searchData);
         await this.handleShowProductsByCategory(ctx, true);
         break;
       }
@@ -208,8 +211,7 @@ export class AppUpdate {
   async repospond(@Ctx() ctx: any) {
     const { phone_number, first_name, user_id } = ctx.update.message.contact;
 
-    await this.cartService.setClientName(user_id, first_name);
-    await this.cartService.setPhoneNumber(user_id, phone_number);
+    await this.cartService.setPhoneAndClient(user_id, first_name, phone_number);
     await ctx.reply(Messages.ContactAccepted, {
       reply_markup: {
         resize_keyboard: true,
@@ -256,17 +258,16 @@ export class AppUpdate {
   async cart(@Ctx() ctx: any) {
     const cartId = ctx.update.message.from.id;
     const cart = await this.cartService.getCart(cartId);
-    if (!cart) {
-      await ctx.reply(Messages.EmtpyCart);
+    if (cart.items.length === 0) {
+      await ctx.reply(Messages.EmptyCart);
     } else {
       await ctx.reply(Messages.CartItems);
-
       await this.listCartItems(ctx, cart.items);
     }
   }
 
   //handlers
-  async listCartItems(ctx: any, items: CartItem[]) {
+  async listCartItems(ctx: any, items: CartCacheItem[]) {
     for (let i = 0; i < items.length; i++) {
       await ctx.reply(
         useTemplate(
@@ -301,7 +302,7 @@ export class AppUpdate {
     }
 
     const cartId = this.getCartId(ctx);
-    const searchData = await this.cartService.getSearch(cartId);
+    const searchData = await this.searchService.get(cartId);
 
     try {
       if (searchData.messageId) {
@@ -331,7 +332,7 @@ export class AppUpdate {
         },
       );
 
-      await this.cartService.setSearch(cartId, {
+      await this.searchService.set(cartId, {
         ...searchData,
         pageMessageId: pageButton.message_id,
       });
@@ -357,17 +358,18 @@ export class AppUpdate {
     });
 
     const cartId = this.getCartId(ctx);
-    const searchDto = await this.cartService.getSearch(cartId);
+    const searchDto = await this.searchService.get(cartId);
     searchDto.messageId = message.message_id;
-    await this.cartService.setSearch(cartId, searchDto);
+    await this.searchService.set(cartId, searchDto);
   }
 
   async handleViewProduct(ctx: any, productId: string) {
     await ctx.deleteMessage();
     const product = await this.productsService.findOne(productId);
+    const imageUrl = product.image || this.commonService.DefaultImage;
 
     await ctx.replyWithPhoto(
-      { url: product.image },
+      { url: imageUrl },
       {
         caption: useTemplate(Messages.ProductInfo, product.name, product.price),
         reply_markup: {
@@ -380,9 +382,9 @@ export class AppUpdate {
   async handleCheckOut(cartId: string, ctx: Context) {
     const cartBeforeSubmit = await this.cartService.getCart(cartId);
     if (!cartBeforeSubmit) {
-      await ctx.reply(Messages.EmtpyCart);
+      await ctx.reply(Messages.EmptyCart);
       return;
-    } else if (!cartBeforeSubmit.phoneNumber && !cartBeforeSubmit.clientName) {
+    } else if (!(await this.cartService.HasClientInfo(cartId))) {
       await ctx.reply(Messages.ContactDisclaimer, {
         reply_markup: {
           one_time_keyboard: true,
@@ -392,7 +394,7 @@ export class AppUpdate {
       return;
     }
 
-    const adminData = this.cartService.getAdminDetails;
+    const adminData = this.commonService.AdminDetails;
 
     const cart = await this.cartService.submitCart(cartId);
     await ctx.reply(
@@ -443,7 +445,10 @@ export class AppUpdate {
     );
   }
 
-  async handleAddToCart(productId: string, cartId: string): Promise<CartItem> {
+  async handleAddToCart(
+    productId: string,
+    cartId: string,
+  ): Promise<CartCacheItem> {
     const product = await this.productsService.findOne(productId);
     const cartItem = await this.cartService.addToCart(product, cartId);
     return cartItem;
@@ -453,7 +458,7 @@ export class AppUpdate {
     ctx: Context,
     productId: string,
     cartId: string,
-  ): Promise<CartItem> {
+  ): Promise<CartCacheItem> {
     const product = await this.productsService.findOne(productId);
     const cartItem = await this.cartService.removeFromCart(product, cartId);
     return cartItem;

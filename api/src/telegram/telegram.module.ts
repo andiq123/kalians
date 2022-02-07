@@ -7,6 +7,8 @@ import { ProductsModule } from 'src/products/products.module';
 import { AppUpdate } from './app.update';
 import { ErrorAndActions } from './middleware/error-actions.middleware';
 import { CartServiceCache } from './services/cart-cache.services';
+import { CommonService } from './services/common.service';
+import { SearchService } from './services/search-cache.service';
 
 @Module({
   imports: [
@@ -32,6 +34,6 @@ import { CartServiceCache } from './services/cart-cache.services';
       }),
     }),
   ],
-  providers: [AppUpdate, CartServiceCache],
+  providers: [AppUpdate, CartServiceCache, CommonService, SearchService],
 })
 export class TelegramModule {}

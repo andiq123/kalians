@@ -3,9 +3,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from './products/products.module';
 import { AuthModule } from './auth/auth.module';
-
-import { join } from 'path';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { TelegramModule } from './telegram/telegram.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
@@ -52,11 +49,4 @@ import { CategoriesModule } from './categories/categories.module';
   ],
   controllers: [],
 })
-export class AppModule {
-  // configure(frontEnd: MiddlewareConsumer) {
-  //   frontEnd.apply(FrontEndMiddleware).forRoutes({
-  //     path: '*',
-  //     method: RequestMethod.ALL,
-  //   });
-  // }
-}
+export class AppModule {}

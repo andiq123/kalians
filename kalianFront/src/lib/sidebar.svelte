@@ -53,7 +53,7 @@
 			</div>
 		{:else if $page.url.pathname === '/carts'}
 			<div in:fly={{ x: -30 }}>
-				<Search searchBy="id" />
+				<Search searchBy="id" type="number" />
 			</div>
 		{/if}
 	</div>

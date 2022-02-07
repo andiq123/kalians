@@ -17,4 +17,5 @@ export const configValidationSchema = Joi.object({
   CLOUDINARY_API_SECRET: Joi.string().required(),
   CLOUDINARY_API_KEY: Joi.string().required(),
   CLOUDINARY_CLOUD_NAME: Joi.string().required(),
+  DEFAULT_IMAGE: Joi.string().required(),
 });

@@ -6,7 +6,7 @@
 	let loading = false;
 	let name = '';
 
-	$: formValid = true;
+	$: formValid = name.length > 0;
 
 	function clickOutside(node) {
 		const handleClick = (event) => {

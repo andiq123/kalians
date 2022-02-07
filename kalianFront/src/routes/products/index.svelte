@@ -1,11 +1,11 @@
-<script context="module" lang="ts">
+<script context="module">
 	export async function load({ fetch, url }) {
 		const urlLink = new URL(GetProductsEndPoint);
 		const httpParams = new URLSearchParams();
-		httpParams.append('limit', url.searchParams.get('limit') || '5');
-		httpParams.append('offset', url.searchParams.get('offset') || '0');
-		httpParams.append('name', url.searchParams.get('name') || '');
-		urlLink.search = httpParams.toString();
+		// httpParams.append('limit', url.searchParams.get('limit') || '5');
+		// httpParams.append('offset', url.searchParams.get('offset') || '0');
+		// httpParams.append('name', url.searchParams.get('name') || '');
+		// urlLink.search = httpParams.toString();
 
 		const res = await fetch(urlLink.toString());
 
@@ -28,15 +28,14 @@
 <script lang="ts">
 	import Edit from '$lib/products/edit-modal.svelte';
 	import Product from '$lib/products/product.svelte';
-	import { CategoriesGet } from '../../services/categories';
 	import { Decrement, Increment, ProductUpdate } from '../../services/products';
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 	import Pagination from '$lib/pagination.svelte';
-	import { GetProductsEndPoint } from '../../endpoints/api-endpoints';
+	import { GetProductsEndPoint } from '../../services/endpoints/api-endpoints';
+	import { CategoriesGet } from '../../services/categories';
 
 	export let pagedResult;
-
 	const baseUrl = import.meta.env.VITE_BASE_URL;
 
 	let productToEdit;
@@ -96,17 +95,20 @@
 	};
 
 	const getCategories = async () => {
-		const data = CategoriesGet();
+		const data = await CategoriesGet();
 		return data;
 	};
 
-	//prefetching
-	const images = Object.values(pagedResult.items).map((x: any) => x.image);
+	// prefetching
+	$: images = Object.values(pagedResult.items).map((x: any) => x.image);
 </script>
 
 <svelte:head>
+	<title>Products</title>
 	{#each images as image}
-		<link rel="preload" as="image" href={image} />
+		{#if image}
+			<link rel="preload" as="image" href={image} />
+		{/if}
 	{/each}
 </svelte:head>
 
@@ -133,7 +135,8 @@
 	<Pagination totalItems={pagedResult.count} />
 </div>
 
-{#await getCategories() then categories}
+<!-- {#await getCategories() then categories}
+	<p>{categories.length}</p>
 	{#if productToEdit}
 		<Edit
 			{categories}
@@ -142,7 +145,6 @@
 			on:update={onUpdate}
 		/>
 	{/if}
-{/await}
-
+{/await} -->
 <style>
 </style>

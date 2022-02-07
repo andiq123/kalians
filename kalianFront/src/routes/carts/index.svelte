@@ -1,8 +1,6 @@
 <script context="module">
 	export async function load({ fetch, url }) {
-		const baseUrl = import.meta.env.VITE_BASE_URL;
-		const link = baseUrl + 'carts';
-		const urlLink = new URL(link);
+		const urlLink = new URL(GetCartsEndPoint);
 		const httpParams = new URLSearchParams();
 		httpParams.append('limit', url.searchParams.get('limit') || '4');
 		httpParams.append('offset', url.searchParams.get('offset') || '0');
@@ -30,45 +28,52 @@
 	import Pagination from '$lib/pagination.svelte';
 	import { fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
+	import Cart from '$lib/carts/cart.svelte';
+	import { GetCartsEndPoint } from '../../services/endpoints/api-endpoints';
+	import { CompleteCart } from '../../services/carts';
 	export let pagedResult;
+
+	const SetItemLoading = (id) => {
+		pagedResult = {
+			...pagedResult,
+			items: pagedResult.items.map((item) => {
+				if (item.id === id) {
+					return { ...item, loading: true };
+				}
+				return item;
+			})
+		};
+	};
+
+	const onSubmit = async ({ detail }) => {
+		const { id } = detail;
+		SetItemLoading(id);
+		const cart = await CompleteCart(id);
+		updateCart(cart);
+	};
+
+	const updateCart = (cart) => {
+		pagedResult = {
+			...pagedResult,
+			items: pagedResult.items.map((x) => {
+				if (x.id === cart.id) {
+					return cart;
+				}
+				return x;
+			})
+		};
+	};
 </script>
+
+<svelte:head>
+	<title>Carts</title>
+</svelte:head>
 
 <div class="grid grid-rows-1 mx-auto p-5" in:fly={{ y: -30 }}>
 	<div class="flex flex-row flex-wrap gap-10">
 		{#each pagedResult.items as cart (cart.id)}
-			<div class="card shadow-2xl rounded-lg h-fit" animate:flip>
-				<div class="card-body">
-					<div class="flex flex-row justify-between">
-						<h2 class="card-title capitalize">#{cart.id}</h2>
-						<h2 class="card-title capitalize">{cart.status}</h2>
-					</div>
-					<div>
-						<h2>Products:</h2>
-						<div class="divide-y my-5">
-							{#each cart.cartItems as cartItem (cartItem.id)}
-								<div class="flex flex-row justify-between my-2">
-									<p>Produs: <span class="capitalize">{cartItem.product?.name}</span></p>
-									<p>
-										Pret: {cartItem.product?.price} Lei x{cartItem.quantity} = {cartItem.product
-											?.price * cartItem.quantity} Lei
-									</p>
-								</div>
-							{/each}
-						</div>
-					</div>
-					<div class="flex flex-col justify-between">
-						<p class="font-light capitalize">
-							<span class="font-bold">Total Price:</span>
-							{cart.totalPrice} Lei
-						</p>
-						<p class="capitalize"><span class="font-bold">Client:</span> {cart.clientName}</p>
-						<p class="font-light capitalize">
-							<span class="font-bold">Phone:</span>
-							{cart.phoneNumber}
-						</p>
-					</div>
-				</div>
-				<button disabled={cart.status !== 'pending'} class="btn btn-primary">Complete</button>
+			<div animate:flip>
+				<Cart {cart} on:submit={onSubmit} />
 			</div>
 		{:else}
 			<div class="mx-auto" in:fly={{ y: -50 }}>

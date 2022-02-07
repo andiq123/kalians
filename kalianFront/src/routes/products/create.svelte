@@ -15,7 +15,7 @@
 
 		return {
 			status: res.status,
-			error: new Error(`Could not load url`)
+			error: new Error('Could not load data')
 		};
 	}
 </script>
@@ -24,7 +24,7 @@
 	import { oneAlertInfo, oneAlertSuccess } from '../../services/alerts';
 	import { ProductCreate, UploadPhoto } from '../../services/products';
 	import { fly } from 'svelte/transition';
-	import { GetCategoriesEndPoint } from '../../endpoints/api-endpoints';
+	import { GetCategoriesEndPoint } from '../../services/endpoints/api-endpoints';
 	export let categories;
 	export let error;
 
@@ -85,6 +85,10 @@
 		if (photoRes) oneAlertSuccess('Image uploaded...');
 	};
 </script>
+
+<svelte:head>
+	<title>Create Product</title>
+</svelte:head>
 
 {#if error}
 	<p>No categories found</p>
