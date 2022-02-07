@@ -10,6 +10,8 @@ import { TelegramModule } from './telegram/telegram.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configValidationSchema } from './config.schema';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { CartsModule } from './carts/carts.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -39,14 +41,14 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
         };
       },
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-      exclude: ['/api*'],
-    }),
     ProductsModule,
+    CategoriesModule,
+    CartsModule,
     AuthModule,
     TelegramModule,
     CloudinaryModule,
+    CartsModule,
+    CategoriesModule,
   ],
   controllers: [],
 })

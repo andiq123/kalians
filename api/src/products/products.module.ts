@@ -4,27 +4,19 @@ import { ProductsService } from './services/products.service';
 import { ProductsController } from './products.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsRepository } from './repositories/products.repository';
-import { Category } from './entities/category.entity';
-import { CategoryService } from './services/category.service';
 import { AuthModule } from 'src/auth/auth.module';
-import { Cart, CartItemLocal } from './entities/cart.entity';
-import { CartService } from './services/cart.service';
-import { CartsController } from './carts.controller';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { CategoriesModule } from 'src/categories/categories.module';
 
 @Module({
-  controllers: [ProductsController, CartsController],
+  controllers: [ProductsController],
   imports: [
     AuthModule,
     CloudinaryModule,
-    TypeOrmModule.forFeature([
-      ProductsRepository,
-      Category,
-      Cart,
-      CartItemLocal,
-    ]),
+    CategoriesModule,
+    TypeOrmModule.forFeature([ProductsRepository]),
   ],
-  providers: [ProductsService, CategoryService, CartService],
-  exports: [ProductsService, CategoryService, CartService],
+  providers: [ProductsService],
+  exports: [ProductsService],
 })
 export class ProductsModule {}

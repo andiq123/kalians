@@ -19,3 +19,11 @@
     gap: 10px;
   }
 }
+
+@media screen and (max-width: 800px) {
+  .carts {
+    .card {
+      width: 90%;
+    }
+  }
+}

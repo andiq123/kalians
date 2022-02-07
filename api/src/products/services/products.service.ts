@@ -7,7 +7,7 @@ import { ProductSearchDto } from '../dto/product-search.dto';
 import { ProductUpdateDto } from '../dto/product-update.dto';
 import { ProductViewDto } from '../dto/product-view.dto';
 import { ProductsViewDto } from '../dto/products-view.dto';
-import { Category } from '../entities/category.entity';
+import { Category } from '../../categories/entities/category.entity';
 import { Product } from '../entities/product.entity';
 import { ProductsRepository } from '../repositories/products.repository';
 
@@ -56,7 +56,7 @@ export class ProductsService {
     id: string,
     product: ProductUpdateDto,
     category?: Category,
-  ): Promise<void> {
+  ): Promise<ProductViewDto> {
     await this.findOne(id);
     const { name, description, inStockQuantity, price } = product;
     await this.productsRepository.update(id, {
@@ -66,6 +66,7 @@ export class ProductsService {
       price,
       category,
     });
+    return await this.findOne(id);
   }
 
   async updatePhoto(id: string, file: Express.Multer.File): Promise<Product> {
@@ -100,11 +101,5 @@ export class ProductsService {
   async setInStockValue(id: string, value: number): Promise<Product> {
     await this.findOne(id);
     return await this.productsRepository.setInStockValue(id, value);
-  }
-
-  async addInStockValue(id: string, value: number): Promise<Product> {
-    const product = await this.findOne(id);
-    const inStockQuantity = product.inStockQuantity + value;
-    return await this.productsRepository.setInStockValue(id, inStockQuantity);
   }
 }

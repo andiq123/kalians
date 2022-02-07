@@ -3,7 +3,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { ProductCreateDto } from '../dto/product-create.dto';
 import { ProductSearchDto } from '../dto/product-search.dto';
 import { ProductsViewDto } from '../dto/products-view.dto';
-import { Category } from '../entities/category.entity';
+import { Category } from '../../categories/entities/category.entity';
 import { Product } from '../entities/product.entity';
 
 @EntityRepository(Product)
@@ -37,6 +37,7 @@ export class ProductsRepository extends Repository<Product> {
       if (offset) {
         query.offset(offset);
       }
+      query.orderBy('product.name', 'ASC');
     }
 
     const data = await query.getManyAndCount();

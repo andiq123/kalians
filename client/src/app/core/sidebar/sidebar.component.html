@@ -1,9 +1,10 @@
-<div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white bg-dark">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <span class="fs-4">Kalians
-
-        </span>
+<div ngClass="{{isClosed ? 'close-sidebar' : 'open-sidebar'}}"
+    class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white bg-dark">
+    <a class="header text-white text-decoration-none">
+        <span class="fs-4">Kalians </span>
+        <i class="fas fa-window-close" (click)="close.next()"></i>
     </a>
+
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
         <li class="nav-item">

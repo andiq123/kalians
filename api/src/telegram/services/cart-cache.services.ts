@@ -4,10 +4,10 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { config } from 'process';
-import { CartCreateDto } from 'src/products/dto/cart-create.dto';
+import { CartCreateDto } from 'src/carts/dto/cart-create.dto';
 import { ProductViewDto } from 'src/products/dto/product-view.dto';
-import { Cart } from 'src/products/entities/cart.entity';
-import { CartService } from 'src/products/services/cart.service';
+import { Cart } from 'src/carts/entities/cart.entity';
+import { CartService } from 'src/carts/services/cart.service';
 import {
   CartCache,
   CartItem,

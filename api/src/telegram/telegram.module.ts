@@ -1,24 +1,26 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TelegrafModule } from 'nestjs-telegraf';
+import { CartsModule } from 'src/carts/carts.module';
+import { CategoriesModule } from 'src/categories/categories.module';
 import { ProductsModule } from 'src/products/products.module';
-
 import { AppUpdate } from './app.update';
-import { addIsTyping } from './middleware/add-isTyping.middleware';
-
+import { ErrorAndActions } from './middleware/error-actions.middleware';
 import { CartServiceCache } from './services/cart-cache.services';
 
 @Module({
   imports: [
     ConfigModule,
     ProductsModule,
+    CartsModule,
+    CategoriesModule,
     TelegrafModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         token: configService.get('TELEGRAM_BOT_TOKEN'),
         botName: configService.get('TELEGRAM_BOT_NAME'),
-        middlewares: [addIsTyping],
+        middlewares: [ErrorAndActions],
       }),
     }),
     CacheModule.registerAsync({
@@ -33,5 +35,3 @@ import { CartServiceCache } from './services/cart-cache.services';
   providers: [AppUpdate, CartServiceCache],
 })
 export class TelegramModule {}
-// ttl: 600,
-//       max: 100,

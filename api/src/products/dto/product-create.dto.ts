@@ -1,6 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Category } from '../entities/category.entity';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 
 export class ProductCreateDto {
   @IsString()
@@ -17,11 +22,11 @@ export class ProductCreateDto {
   description: string;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsPositive()
   price: number;
 
   @IsNumber()
-  @IsNotEmpty()
+  @IsPositive()
   inStockQuantity: number;
 
   @IsString()

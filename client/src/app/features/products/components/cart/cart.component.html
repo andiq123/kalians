@@ -1,4 +1,4 @@
-<div class="cart-item card-body" (click)="isCollapsed = !isCollapsed">
+<div *ngIf="cart" class="cart-item card-body" (click)="isCollapsed = !isCollapsed">
   <h5 class="card-title">#{{cart.id}}</h5>
   <div class="card-text"><b>Status: </b>{{cart.status | titlecase}}</div>
   <button class="btn btn-primary" *ngIf="cart.status==='pending'" (click)="onUpdateStatus()">Finish</button>
@@ -7,9 +7,9 @@
   <h3 style="padding: 0 20px;">Products:</h3>
   <div class="card" *ngFor="let cartItem  of cart.cartItems">
     <div class="card-body">
-      <p class="card-text"><b>Produs: </b> {{cartItem.product.name | titlecase}}</p>
-      <p class="card-text"><b>Cantitate: </b> {{cartItem.quantity }}</p>
-      <p class="card-text"><b>Pret per 1x</b> {{cartItem.product.price | currency}}</p>
+      <p class="card-text"><b>Produs: </b> {{cartItem.product?.name | titlecase}}</p>
+      <p class="card-text"><b>Cantitate: </b> {{cartItem?.quantity }}</p>
+      <p class="card-text"><b>Pret per 1x</b> {{cartItem?.product?.price | currency}}</p>
       <p class="card-text" *ngIf="cartItem.quantity > 0"><b>Pret per {{cartItem.quantity}}x</b>
         {{getMultipliedPrice(cartItem.id) | currency}}</p>
     </div>

@@ -1,18 +1,24 @@
 /* eslint-disable prettier/prettier */
 import { Update, Ctx, Start, Help, On, Hears } from 'nestjs-telegraf';
 import { ProductsViewDto } from 'src/products/dto/products-view.dto';
-import { CategoryService } from 'src/products/services/category.service';
+import { CategoryService } from 'src/categories/services/category.service';
 import { ProductsService } from 'src/products/services/products.service';
 import { Context } from 'telegraf';
 import { InlineKeyboardButton } from 'telegraf/typings/core/types/typegram';
-import { Messages } from './messages.enum';
+import { Messages } from './enum/messages.enum';
 import { CartItem } from './models/cart-cache.interface';
-
 import {
   ResponseCallback,
   ResponseCallbackCommands,
 } from './models/response-callback.interface';
 import { CartServiceCache } from './services/cart-cache.services';
+import {
+  generatePageButtons,
+  get_checkout_layout,
+  show_buy_layout,
+  show_cartItem_layout,
+} from './helper/buttons-layouts';
+import { useTemplate } from './helper/template.handler';
 
 @Update()
 export class AppUpdate {
@@ -104,16 +110,16 @@ export class AppUpdate {
           if (cartItem.quantity > 0) {
             await ctx.editMessageReplyMarkup({
               inline_keyboard: [
-                this.show_buy_layout(
+                show_buy_layout(
                   cartItem.item.id,
-                  this.useTemplate(Messages.ProductInCart, cartItem.quantity),
+                  useTemplate(Messages.ProductInCart, cartItem.quantity),
                 ),
               ],
             });
           }
 
           await ctx.answerCbQuery(
-            this.useTemplate(
+            useTemplate(
               Messages.ProductAddedToCart,
               cartItem.item.name,
               cartItem.quantity,
@@ -129,7 +135,7 @@ export class AppUpdate {
         const cartItem = await this.handleAddToCart(response.id, cartId);
         if (cartItem) {
           await ctx.editMessageText(
-            this.useTemplate(
+            useTemplate(
               Messages.ProductInfoFull,
               cartItem.item.name,
               cartItem.item.price,
@@ -138,7 +144,7 @@ export class AppUpdate {
             ),
             {
               reply_markup: {
-                inline_keyboard: [this.show_cartItem_layout(cartItem.item.id)],
+                inline_keyboard: [show_cartItem_layout(cartItem.item.id)],
               },
             },
           );
@@ -159,7 +165,7 @@ export class AppUpdate {
             case 0:
               await ctx.deleteMessage();
               await ctx.reply(
-                this.useTemplate(
+                useTemplate(
                   Messages.ProductRemovedFromCart,
                   cartItem.item.name,
                 ),
@@ -168,7 +174,7 @@ export class AppUpdate {
 
             default:
               await ctx.editMessageText(
-                this.useTemplate(
+                useTemplate(
                   Messages.ProductInfoFull,
                   cartItem.item.name,
                   cartItem.item.price,
@@ -177,9 +183,7 @@ export class AppUpdate {
                 ),
                 {
                   reply_markup: {
-                    inline_keyboard: [
-                      this.show_cartItem_layout(cartItem.item.id),
-                    ],
+                    inline_keyboard: [show_cartItem_layout(cartItem.item.id)],
                   },
                 },
               );
@@ -206,24 +210,21 @@ export class AppUpdate {
 
     await this.cartService.setClientName(user_id, first_name);
     await this.cartService.setPhoneNumber(user_id, phone_number);
-    await ctx.reply(
-      'Perfect, acum poti sa trimiti comanda sau sa te intorci la catalogul de produse!',
-      {
-        reply_markup: {
-          resize_keyboard: true,
-          keyboard: [
-            [
-              { text: 'Trimite Coș' },
-              { text: 'Catalog de produse 🏪' },
-              { text: 'Coș 🛒' },
-            ],
+    await ctx.reply(Messages.ContactAccepted, {
+      reply_markup: {
+        resize_keyboard: true,
+        keyboard: [
+          [
+            { text: Messages.SendOrder },
+            { text: Messages.ListProducts },
+            { text: Messages.ShowCart },
           ],
-        },
+        ],
       },
-    );
+    });
   }
 
-  @Hears('Trimite Coș')
+  @Hears(Messages.SendOrder)
   async checkOut(@Ctx() ctx: any) {
     const id = ctx.update.message.from.id;
     await this.handleCheckOut(id, ctx);
@@ -231,18 +232,24 @@ export class AppUpdate {
 
   @Hears(Messages.ListProducts)
   async hears(@Ctx() ctx: Context) {
-    const categories = await this.categoryService.getAll();
-    const buttons = categories.map((x) => ({
-      text: x.name,
-      callback_data: JSON.stringify({
-        id: x.id,
-        command: ResponseCallbackCommands.category,
-      }),
-    }));
+    try {
+      const categories = await this.categoryService.getAll();
 
-    await ctx.reply(Messages.ChoseFromCategories, {
-      reply_markup: { inline_keyboard: [buttons] },
-    });
+      const buttons = categories.map((x) => ({
+        text: x.name,
+        callback_data: JSON.stringify({
+          id: x.id,
+          command: ResponseCallbackCommands.category,
+        }),
+      }));
+
+      await ctx.reply(Messages.ChoseFromCategories, {
+        reply_markup: { inline_keyboard: [buttons] },
+      });
+    } catch (error) {
+      await ctx.reply('Nu sunt produse disponibile');
+      return;
+    }
   }
 
   @Hears(Messages.ShowCart)
@@ -254,20 +261,40 @@ export class AppUpdate {
     } else {
       await ctx.reply(Messages.CartItems);
 
-      this.listCartItems(ctx, cart.items);
-      const fullPrice = cart.items.reduce((acc, x) => {
-        return acc + x.item.price * x.quantity;
-      }, 0);
-      await ctx.reply(this.useTemplate(Messages.FullPrice, fullPrice), {
-        reply_markup: {
-          inline_keyboard: [this.get_checkout_layout(cartId)],
-        },
-      });
-      await ctx.reply(Messages.InfoCart);
+      await this.listCartItems(ctx, cart.items);
     }
   }
 
   //handlers
+  async listCartItems(ctx: any, items: CartItem[]) {
+    for (let i = 0; i < items.length; i++) {
+      await ctx.reply(
+        useTemplate(
+          Messages.ProductInfoFull,
+          items[i].item.name,
+          items[i].item.price,
+          items[i].quantity,
+          items[i].item.price * items[i].quantity,
+        ),
+        {
+          reply_markup: {
+            inline_keyboard: [show_cartItem_layout(items[i].item.id)],
+          },
+        },
+      );
+    }
+    const fullPrice = items.reduce((acc, x) => {
+      return acc + x.item.price * x.quantity;
+    }, 0);
+    const cartId = ctx.update.message.from.id;
+    await ctx.reply(useTemplate(Messages.FullPrice, fullPrice), {
+      reply_markup: {
+        inline_keyboard: [get_checkout_layout(cartId)],
+      },
+    });
+    // await ctx.reply(Messages.InfoCart);
+  }
+
   async handleShowProductsByCategory(ctx: Context, deleteMessage = false) {
     if (deleteMessage) {
       await ctx.deleteMessage();
@@ -296,10 +323,10 @@ export class AppUpdate {
       const totalPages = Math.ceil(products.count / searchData.pageSize);
       const { pageNumber } = searchData;
       const pageButton = await ctx.reply(
-        this.useTemplate(Messages.PageInfo, pageNumber + 1, totalPages),
+        useTemplate(Messages.PageInfo, pageNumber + 1, totalPages),
         {
           reply_markup: {
-            inline_keyboard: this.generatePageButtons(pageNumber, totalPages),
+            inline_keyboard: generatePageButtons(pageNumber, totalPages),
           },
         },
       );
@@ -314,7 +341,7 @@ export class AppUpdate {
   async listProducts(ctx: Context, products: ProductsViewDto) {
     const buttons: InlineKeyboardButton[][] = products.items.map((x) => [
       {
-        text: this.useTemplate(Messages.ProductInfo, x.name, x.price),
+        text: useTemplate(Messages.ProductInfo, x.name, x.price),
         callback_data: JSON.stringify({
           id: x.id,
           command: ResponseCallbackCommands.viewProduct,
@@ -342,13 +369,9 @@ export class AppUpdate {
     await ctx.replyWithPhoto(
       { url: product.image },
       {
-        caption: this.useTemplate(
-          Messages.ProductInfo,
-          product.name,
-          product.price,
-        ),
+        caption: useTemplate(Messages.ProductInfo, product.name, product.price),
         reply_markup: {
-          inline_keyboard: [this.show_buy_layout(product.id, Messages.Buy)],
+          inline_keyboard: [show_buy_layout(product.id, Messages.Buy)],
         },
       },
     );
@@ -369,15 +392,24 @@ export class AppUpdate {
       return;
     }
 
+    const adminData = this.cartService.getAdminDetails;
+
     const cart = await this.cartService.submitCart(cartId);
     await ctx.reply(
-      this.useTemplate(
+      useTemplate(
         Messages.OrderSuccess,
         cartBeforeSubmit.items.map((x) =>
-          this.useTemplate(Messages.ProductInfo, x.item.name, x.item.price),
+          useTemplate(
+            Messages.ProductInfoFull,
+            x.item.name,
+            x.item.price,
+            x.quantity,
+            x.item.price * x.quantity,
+          ),
         ),
         cart.totalPrice,
         cart.id,
+        adminData.phoneNumber,
       ),
       {
         reply_markup: {
@@ -390,13 +422,18 @@ export class AppUpdate {
     );
 
     // mesaj for admin
-    const adminData = this.cartService.getAdminDetails;
     await ctx.telegram.sendMessage(
       adminData.id,
-      this.useTemplate(
+      useTemplate(
         Messages.AdminMessage,
         cartBeforeSubmit.items.map((x) =>
-          this.useTemplate(Messages.ProductInfo, x.item.name, x.item.price),
+          useTemplate(
+            Messages.ProductInfoFull,
+            x.item.name,
+            x.item.price,
+            x.quantity,
+            x.item.price * x.quantity,
+          ),
         ),
         cart.totalPrice,
         cart.id,
@@ -404,25 +441,6 @@ export class AppUpdate {
         cart.phoneNumber,
       ),
     );
-  }
-
-  async listCartItems(ctx: any, items: CartItem[]) {
-    for (let i = 0; i < items.length; i++) {
-      await ctx.reply(
-        this.useTemplate(
-          Messages.ProductInfoFull,
-          items[i].item.name,
-          items[i].item.price,
-          items[i].quantity,
-          items[i].item.price * items[i].quantity,
-        ),
-        {
-          reply_markup: {
-            inline_keyboard: [this.show_cartItem_layout(items[i].item.id)],
-          },
-        },
-      );
-    }
   }
 
   async handleAddToCart(productId: string, cartId: string): Promise<CartItem> {
@@ -441,87 +459,6 @@ export class AppUpdate {
     return cartItem;
   }
 
-  //buttons markup
-  show_buy_layout(id: string, text: string) {
-    return [
-      {
-        text: Messages.Back,
-        callback_data: JSON.stringify({
-          command: ResponseCallbackCommands.category,
-        }),
-      },
-      {
-        text,
-        callback_data: JSON.stringify({
-          id: id,
-          command: ResponseCallbackCommands.buy,
-        }),
-      },
-    ];
-  }
-
-  get_checkout_layout(cartId: string) {
-    return [
-      {
-        text: Messages.Checkout,
-        callback_data: JSON.stringify({
-          id: cartId,
-          command: ResponseCallbackCommands.checkout,
-        }),
-      },
-    ];
-  }
-
-  show_cartItem_layout(id: string) {
-    return [
-      {
-        text: '+',
-        callback_data: JSON.stringify({
-          id: id,
-          command: ResponseCallbackCommands.add,
-        }),
-      },
-      {
-        text: '-',
-        callback_data: JSON.stringify({
-          id: id,
-          command: ResponseCallbackCommands.remove,
-        }),
-      },
-    ];
-  }
-
-  generatePageButtons(
-    pageNumber: number,
-    totalPages: number,
-  ): InlineKeyboardButton[][] {
-    return [
-      [
-        pageNumber > 0
-          ? {
-              text: Messages.PreviousPage,
-              callback_data: JSON.stringify({
-                command: ResponseCallbackCommands.previousPage,
-              }),
-            }
-          : { text: '-', callback_data: JSON.stringify('') },
-        pageNumber < totalPages - 1
-          ? {
-              text: Messages.NextPage,
-              callback_data: JSON.stringify({
-                command: ResponseCallbackCommands.nextPage,
-              }),
-            }
-          : { text: '-', callback_data: JSON.stringify('') },
-      ],
-    ];
-  }
-
-  useTemplate(template: string, ...itemsToBeReplaced): string {
-    return template.replace(/{(\d+)}/g, (match, number) => {
-      return itemsToBeReplaced[number] || match;
-    });
-  }
   getCartId(ctx: any) {
     return ctx.update.callback_query.from.id;
   }

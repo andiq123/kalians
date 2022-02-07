@@ -1,16 +1,8 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { CartItemLocal } from './cart.entity';
-import { Category } from './category.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Category } from '../../categories/entities/category.entity';
 
 @Entity()
 export class Product {
@@ -32,7 +24,7 @@ export class Product {
   @Column()
   inStockQuantity: number;
 
-  @ManyToOne((type) => Category, (category) => category.products, {
+  @ManyToOne((_) => Category, (category) => category.products, {
     eager: true,
   })
   category: Category;

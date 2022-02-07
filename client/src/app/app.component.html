@@ -1,5 +1,6 @@
 <ngx-spinner></ngx-spinner>
+<button class="menu-button" *ngIf="SidebarClosed" (click)="SidebarClosed = false">Menu</button>
 <div class="main">
-    <app-sidebar></app-sidebar>
+    <app-sidebar [isClosed]="SidebarClosed" (close)="SidebarClosed=true"></app-sidebar>
     <router-outlet></router-outlet>
 </div>

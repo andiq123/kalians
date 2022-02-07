@@ -11,3 +11,9 @@
 .cart-item {
   cursor: pointer;
 }
+
+@media screen and (max-width: 800px) {
+  .card-body {
+    flex-direction: column;
+  }
+}
