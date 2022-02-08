@@ -3,7 +3,7 @@
 	 * @type {import('@sveltejs/kit').Load}
 	 */
 	export async function load({ fetch }) {
-		const res = await fetch(GetCategoriesEndPoint);
+		const res = await fetch('/categories/api');
 
 		if (res.ok) {
 			return {
@@ -22,9 +22,9 @@
 
 <script>
 	import { oneAlertInfo, oneAlertSuccess } from '../../services/alerts';
-	import { ProductCreate, UploadPhoto } from '../../services/products';
+
 	import { fly } from 'svelte/transition';
-	import { GetCategoriesEndPoint } from '../../services/endpoints/api-endpoints';
+
 	export let categories;
 	export let error;
 
@@ -74,15 +74,32 @@
 	};
 
 	const postProduct = async (product) => {
-		const data = await ProductCreate(product);
-		if (!data) return;
+		const res = await fetch('api/create', {
+			method: 'POST',
+			body: JSON.stringify(product),
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (!res.ok) return;
+		const productCreated = await res.json();
 		oneAlertSuccess('Product Created...');
 
 		if (!image) return;
-
 		oneAlertInfo('Uploading Image...');
-		const photoRes = await UploadPhoto(data.id, image);
-		if (photoRes) oneAlertSuccess('Image uploaded...');
+
+		const formData = new FormData();
+		formData.append('file', image);
+
+		const photoRes = await fetch(`api/photo_${productCreated.id}`, {
+			method: 'POST',
+			body: formData
+		});
+
+		if (photoRes.ok) {
+			oneAlertSuccess('Image uploaded...');
+		}
 	};
 </script>
 

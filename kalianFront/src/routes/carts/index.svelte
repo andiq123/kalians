@@ -1,4 +1,4 @@
-<script context="module">
+<!-- <script context="module">
 	export async function load({ fetch, url }) {
 		const urlLink = new URL(GetCartsEndPoint);
 		const httpParams = new URLSearchParams();
@@ -22,15 +22,14 @@
 			error: new Error(`Could not load url`)
 		};
 	}
-</script>
-
+</script> -->
 <script>
 	import Pagination from '$lib/pagination.svelte';
 	import { fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import Cart from '$lib/carts/cart.svelte';
-	import { GetCartsEndPoint } from '../../services/endpoints/api-endpoints';
-	import { CompleteCart } from '../../services/carts';
+	import { GetCartsEndPoint } from '../../lib/api-endpoints';
+	// import { CompleteCart } from '../../services/carts';
 	export let pagedResult;
 
 	const SetItemLoading = (id) => {
@@ -48,8 +47,8 @@
 	const onSubmit = async ({ detail }) => {
 		const { id } = detail;
 		SetItemLoading(id);
-		const cart = await CompleteCart(id);
-		updateCart(cart);
+		// const cart = await CompleteCart(id);
+		// updateCart(cart);
 	};
 
 	const updateCart = (cart) => {

@@ -13,5 +13,6 @@
 </script>
 
 <div class="card shadow-2xl h-fit mx-auto my-20">
+	<h1>{title}</h1>
 	<div class="card-title p-10">Pagina nu exista, sau lipsesc datele...</div>
 </div>

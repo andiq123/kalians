@@ -1,6 +1,6 @@
 <script context="module">
 	export async function load({ fetch }) {
-		const res = await fetch(GetCategoriesEndPoint);
+		const res = await fetch('/categories/api');
 		if (res.ok) {
 			return {
 				props: {
@@ -16,8 +16,6 @@
 </script>
 
 <script>
-	import { CreateCategory, DeleteCategory } from '../../services/categories';
-	import { GetCategoriesEndPoint } from '../../services/endpoints/api-endpoints';
 	import CreateModal from '$lib/categories/create-modal.svelte';
 	import Category from '$lib/categories/Category.svelte';
 	import { fly } from 'svelte/transition';
@@ -25,18 +23,23 @@
 	export let categories = [];
 	import { onMount } from 'svelte';
 
-	const createCategory = async ({ detail }) => {
-		const { name } = detail;
-		const category = await CreateCategory(name);
-		if (category) {
-			categories = [...categories, category];
-			showModal = false;
-		}
+	const createCategory = async ({ detail: { name } }) => {
+		const res = await fetch('/categories/api/create', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ name })
+		});
+		const category = await res.json();
+
+		categories = [...categories, category];
+		showModal = false;
 	};
 
 	const deleteCategory = async ({ detail }) => {
 		const { id } = detail;
-		await DeleteCategory(id);
+		const res = await fetch(`categories/api/delete_${id}`);
 		categories = categories.filter((category) => category.id !== id);
 	};
 

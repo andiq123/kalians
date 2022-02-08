@@ -1,14 +1,15 @@
 <script context="module">
-	export async function load({ fetch, url }) {
+	/** @type {import('@sveltejs/kit').Load} */
+	export async function load({ fetch, session, url }) {
+		const { token } = session;
 		const urlLink = new URL(GetProductsEndPoint);
 		const httpParams = new URLSearchParams();
-		// httpParams.append('limit', url.searchParams.get('limit') || '5');
-		// httpParams.append('offset', url.searchParams.get('offset') || '0');
-		// httpParams.append('name', url.searchParams.get('name') || '');
-		// urlLink.search = httpParams.toString();
+		httpParams.append('limit', url.searchParams.get('limit') || '5');
+		httpParams.append('offset', url.searchParams.get('offset') || '0');
+		httpParams.append('name', url.searchParams.get('name') || '');
+		urlLink.search = httpParams.toString();
 
-		const res = await fetch(urlLink.toString());
-
+		const res = await fetch('/products/api');
 		if (res.ok) {
 			const jsonData = await res.json();
 			return {
@@ -16,27 +17,26 @@
 					pagedResult: jsonData
 				}
 			};
+		} else {
+			return {
+				status: 401,
+				error: new Error('Products not found')
+			};
 		}
-
-		return {
-			status: res.status,
-			error: new Error('Could not load data')
-		};
 	}
 </script>
 
 <script lang="ts">
 	import Edit from '$lib/products/edit-modal.svelte';
 	import Product from '$lib/products/product.svelte';
-	import { Decrement, Increment, ProductUpdate } from '../../services/products';
+	// import { Decrement, Increment, ProductUpdate } from '../../services/products';
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 	import Pagination from '$lib/pagination.svelte';
-	import { GetProductsEndPoint } from '../../services/endpoints/api-endpoints';
-	import { CategoriesGet } from '../../services/categories';
+	import { GetProductsEndPoint } from '../../lib/api-endpoints';
+	// import { CategoriesGet } from '../../services/categories';
 
 	export let pagedResult;
-	const baseUrl = import.meta.env.VITE_BASE_URL;
 
 	let productToEdit;
 	const editProduct = ({ detail }) => {
@@ -44,32 +44,36 @@
 		productToEdit = product;
 	};
 
-	const increment = async ({ detail }) => {
-		const { id } = detail;
-		const product = await Increment(id);
-		updateProduct(product);
+	const increment = async ({ detail: { id } }) => {
+		const res = await fetch(`products/api/${id}_increment`);
+		const incrementedProduct = await res.json();
+		updateProduct(incrementedProduct);
 	};
 
-	const decrement = async ({ detail }) => {
-		const { id } = detail;
-		const product = await Decrement(id);
-		updateProduct(product);
+	const decrement = async ({ detail: { id } }) => {
+		const res = await fetch(`products/api/${id}_decrement`);
+		const incrementedProduct = await res.json();
+		updateProduct(incrementedProduct);
 	};
 
-	const deleteProduct = async ({ detail }) => {
-		const { id } = detail;
+	const deleteProduct = async ({ detail: { id } }) => {
 		const product = pagedResult.items.find((x) => x.id === id);
 		product.loading = true;
-		const res = await fetch(baseUrl + `products/${id}`, { method: 'DELETE' });
+		const res = await fetch(`products/api/delete_${id}`);
 		if (res.status === 200) {
 			filterProducts(id);
 		}
 	};
 
-	const onUpdate = async ({ detail }) => {
-		const { product } = detail;
+	const onUpdate = async ({ detail: { product } }) => {
 		product.image = undefined;
-		const data = await ProductUpdate(product);
+		const data = await fetch(`products/api/update_${product.id}}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(product)
+		});
 		updateProduct(data);
 		productToEdit = undefined;
 	};
@@ -95,8 +99,8 @@
 	};
 
 	const getCategories = async () => {
-		const data = await CategoriesGet();
-		return data;
+		const res = await fetch('categories/api');
+		return await res.json();
 	};
 
 	// prefetching
@@ -135,8 +139,7 @@
 	<Pagination totalItems={pagedResult.count} />
 </div>
 
-<!-- {#await getCategories() then categories}
-	<p>{categories.length}</p>
+{#await getCategories() then categories}
 	{#if productToEdit}
 		<Edit
 			{categories}
@@ -145,6 +148,7 @@
 			on:update={onUpdate}
 		/>
 	{/if}
-{/await} -->
+{/await}
+
 <style>
 </style>
