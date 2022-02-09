@@ -1,15 +1,12 @@
 <script context="module">
 	/** @type {import('@sveltejs/kit').Load} */
-	export async function load({ fetch, session, url }) {
-		const { token } = session;
-		const urlLink = new URL(GetProductsEndPoint);
+	export async function load({ fetch, url }) {
 		const httpParams = new URLSearchParams();
 		httpParams.append('limit', url.searchParams.get('limit') || '5');
 		httpParams.append('offset', url.searchParams.get('offset') || '0');
 		httpParams.append('name', url.searchParams.get('name') || '');
-		urlLink.search = httpParams.toString();
 
-		const res = await fetch('/products/api');
+		const res = await fetch(`/products/api?${httpParams.toString()}`);
 		if (res.ok) {
 			const jsonData = await res.json();
 			return {
@@ -17,24 +14,26 @@
 					pagedResult: jsonData
 				}
 			};
-		} else {
+		}
+		if (res.status === 401) {
 			return {
-				status: 401,
-				error: new Error('Products not found')
+				status: 301,
+				redirect: '/auth'
 			};
 		}
+		return {
+			status: 401,
+			error: new Error('Products not found')
+		};
 	}
 </script>
 
 <script lang="ts">
 	import Edit from '$lib/products/edit-modal.svelte';
 	import Product from '$lib/products/product.svelte';
-	// import { Decrement, Increment, ProductUpdate } from '../../services/products';
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 	import Pagination from '$lib/pagination.svelte';
-	import { GetProductsEndPoint } from '../../lib/api-endpoints';
-	// import { CategoriesGet } from '../../services/categories';
 
 	export let pagedResult;
 

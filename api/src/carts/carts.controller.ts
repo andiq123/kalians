@@ -5,7 +5,7 @@ import { CartSearchDto } from './dto/cart-search.dto';
 import { Cart } from './entities/cart.entity';
 import { CartService } from './services/cart.service';
 
-// @UseGuards(AuthGuard())
+@UseGuards(AuthGuard())
 @Controller('carts')
 export class CartsController {
   constructor(private cartsService: CartService) {}

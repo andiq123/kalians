@@ -1,8 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { CategoryCreateDto } from './dto/category-create.dto';
 import { Category } from './entities/category.entity';
 import { CategoryService } from './services/category.service';
 
+@UseGuards(AuthGuard())
 @Controller('categories')
 export class CategoriesController {
   constructor(private categoryService: CategoryService) {}

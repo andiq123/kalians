@@ -13,6 +13,9 @@
 			class:loading
 			on:click={() => {
 				loading = true;
+				setTimeout(() => {
+					loading = false;
+				}, 1500);
 				dispatch('delete', { id: category.id });
 			}}>Delete</button
 		>

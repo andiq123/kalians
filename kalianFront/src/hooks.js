@@ -4,8 +4,11 @@ import * as cookie from 'cookie';
 export const handle = async ({ event, resolve }) => {
 	const cookies = cookie.parse(event.request.headers.get('cookie') || '');
 	const token = cookies['token'] || '';
+
 	if (token.length > 0) {
-		event.locals = { ...event.locals, token };
+		event.locals['token'] = token;
+	} else {
+		event.locals['token'] = undefined;
 	}
 
 	return await resolve(event);
@@ -13,6 +16,6 @@ export const handle = async ({ event, resolve }) => {
 
 /** @type {import('@sveltejs/kit').GetSession} */
 export const getSession = (request) => {
-	const token = request.locals['token'];
+	const token = request.locals['token'] || '';
 	if (token) return { token };
 };

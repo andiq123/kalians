@@ -1,13 +1,11 @@
-<!-- <script context="module">
+<script context="module">
 	export async function load({ fetch, url }) {
-		const urlLink = new URL(GetCartsEndPoint);
 		const httpParams = new URLSearchParams();
 		httpParams.append('limit', url.searchParams.get('limit') || '4');
 		httpParams.append('offset', url.searchParams.get('offset') || '0');
 		httpParams.append('id', url.searchParams.get('id') || '');
 
-		urlLink.search = httpParams.toString();
-		const res = await fetch(urlLink.toString());
+		const res = await fetch(`/carts/api?${httpParams.toString()}`);
 
 		if (res.ok) {
 			return {
@@ -16,20 +14,27 @@
 				}
 			};
 		}
+		
+		if (res.status === 401) {
+			return {
+				status: 301,
+				redirect: '/auth'
+			};
+		}
 
 		return {
 			status: res.status,
 			error: new Error(`Could not load url`)
 		};
 	}
-</script> -->
+</script>
+
 <script>
 	import Pagination from '$lib/pagination.svelte';
 	import { fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import Cart from '$lib/carts/cart.svelte';
-	import { GetCartsEndPoint } from '../../lib/api-endpoints';
-	// import { CompleteCart } from '../../services/carts';
+
 	export let pagedResult;
 
 	const SetItemLoading = (id) => {
@@ -44,11 +49,10 @@
 		};
 	};
 
-	const onSubmit = async ({ detail }) => {
-		const { id } = detail;
+	const onSubmit = async ({ detail: { id } }) => {
 		SetItemLoading(id);
-		// const cart = await CompleteCart(id);
-		// updateCart(cart);
+		const cart = await fetch(`/carts/complete_${id}}`);
+		updateCart(cart);
 	};
 
 	const updateCart = (cart) => {

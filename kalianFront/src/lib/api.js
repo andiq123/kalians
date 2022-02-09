@@ -27,11 +27,7 @@ export function getReq(link, searchParams = null, token = null) {
 	const url = new URL(link);
 
 	if (searchParams) {
-		const httpParams = new URLSearchParams();
-		Object.keys(searchParams).forEach((key) => {
-			httpParams.append(key, searchParams[key]);
-		});
-		url.search = httpParams.toString();
+		url.search = searchParams.toString();
 	}
 
 	return genericFetch({ link: url.toString(), token });

@@ -1,32 +1,36 @@
-import { login } from '../../../services/auth';
+import { postReq } from '$lib/api';
+import { PostLoginEndPoint } from '$lib/api-endpoints';
 import * as cookie from 'cookie';
 
 /** @type {import('@sveltejs/kit').RequestHandler} */
 export const post = async ({ request }) => {
 	const data = await request.json();
-	try {
-		const { token } = await login(data);
-		const headers = {
-			'Set-Cookie': cookie.serialize('token', token, {
-				httpOnly: true,
-				sameSite: 'lax',
-				maxAge: 60 * 60 * 24 * 7,
-				path: '/'
-			})
-		};
+
+	const res = await postReq(PostLoginEndPoint, data);
+
+	if (!res.ok) {
 		return {
-			status: 200,
-			headers,
-			body: {
-				message: 'Logged In'
-			}
-		};
-	} catch (error) {
-		return {
-			status: 401,
+			status: res.status,
 			body: {
 				message: 'Invalid Credentials'
 			}
 		};
 	}
+
+	const token = res.body.token;
+	const headers = {
+		'set-cookie': cookie.serialize('token', token, {
+			httpOnly: true,
+			sameSite: 'lax',
+			maxAge: 60 * 60 * 24 * 7,
+			path: '/'
+		})
+	};
+	return {
+		status: 200,
+		headers,
+		body: {
+			token
+		}
+	};
 };

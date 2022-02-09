@@ -13,6 +13,13 @@
 			};
 		}
 
+		if (res.status === 401) {
+			return {
+				status: 301,
+				redirect: '/auth'
+			};
+		}
+
 		return {
 			status: res.status,
 			error: new Error('Could not load data')

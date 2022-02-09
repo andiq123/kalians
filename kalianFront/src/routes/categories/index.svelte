@@ -9,7 +9,15 @@
 			};
 		}
 
+		if (res.status === 401) {
+			return {
+				status: 301,
+				redirect: '/auth'
+			};
+		}
+
 		return {
+			status: res.status,
 			error: new Error(`Failed to load categories: ${res.status}`)
 		};
 	}
@@ -22,6 +30,7 @@
 	import { flip } from 'svelte/animate';
 	export let categories = [];
 	import { onMount } from 'svelte';
+	import { manyAlertsError } from '../../services/alerts';
 
 	const createCategory = async ({ detail: { name } }) => {
 		const res = await fetch('/categories/api/create', {
@@ -40,7 +49,12 @@
 	const deleteCategory = async ({ detail }) => {
 		const { id } = detail;
 		const res = await fetch(`categories/api/delete_${id}`);
-		categories = categories.filter((category) => category.id !== id);
+		if (res.ok) {
+			categories = categories.filter((category) => category.id !== id);
+		} else {
+			const data = await res.json();
+			manyAlertsError([data.message]);
+		}
 	};
 
 	let showModal = false;
