@@ -17,5 +17,8 @@ export const handle = async ({ event, resolve }) => {
 /** @type {import('@sveltejs/kit').GetSession} */
 export const getSession = (request) => {
 	const token = request.locals['token'] || '';
-	return { token };
+	if (token) {
+		return { token };
+	}
+	return '';
 };

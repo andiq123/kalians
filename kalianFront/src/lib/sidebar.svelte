@@ -54,8 +54,8 @@
 				<li>
 					<a
 						sveltekit:prefetch
-						href="/auth/"
-						class:btn-active={pathName === '/auth/'}
+						href="/auth"
+						class:btn-active={pathName === '/auth'}
 						class="btn w-full">Login</a
 					>
 				</li>

@@ -26,6 +26,6 @@
 
 	onMount(() => {
 		session.update(() => null);
-		goto('/auth/');
+		goto('/auth');
 	});
 </script>
