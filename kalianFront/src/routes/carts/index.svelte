@@ -51,7 +51,8 @@
 
 	const onSubmit = async ({ detail: { id } }) => {
 		SetItemLoading(id);
-		const cart = await fetch(`/carts/complete_${id}`);
+		const res = await fetch(`/carts/api/complete_${id}`);
+		const cart = await res.json();
 		updateCart(cart);
 	};
 
