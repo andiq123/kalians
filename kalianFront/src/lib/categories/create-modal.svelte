@@ -24,7 +24,7 @@
 </script>
 
 <div class="modal modal-open" transition:fade>
-	<div class="modal-box" use:clickOutside on:outclick={() => dispatch('close')} transition:scale>
+	<div class="modal-box" transition:scale>
 		<form
 			class="form flex flex-col gap-5"
 			on:submit|preventDefault={() => dispatch('create', { name })}

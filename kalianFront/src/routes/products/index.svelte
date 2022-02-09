@@ -22,7 +22,7 @@
 			};
 		}
 		return {
-			status: 401,
+			status: res.status,
 			error: new Error('Products not found')
 		};
 	}
@@ -34,6 +34,7 @@
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 	import Pagination from '$lib/pagination.svelte';
+	import { oneAlertInfo, oneAlertSuccess } from '../../services/alerts';
 
 	export let pagedResult;
 
@@ -44,13 +45,13 @@
 	};
 
 	const increment = async ({ detail: { id } }) => {
-		const res = await fetch(`products/api/${id}_increment`);
+		const res = await fetch(`/products/api/${id}_increment`);
 		const incrementedProduct = await res.json();
 		updateProduct(incrementedProduct);
 	};
 
 	const decrement = async ({ detail: { id } }) => {
-		const res = await fetch(`products/api/${id}_decrement`);
+		const res = await fetch(`/products/api/${id}_decrement`);
 		const incrementedProduct = await res.json();
 		updateProduct(incrementedProduct);
 	};
@@ -58,22 +59,39 @@
 	const deleteProduct = async ({ detail: { id } }) => {
 		const product = pagedResult.items.find((x) => x.id === id);
 		product.loading = true;
-		const res = await fetch(`products/api/delete_${id}`);
+		const res = await fetch(`/products/api/delete_${id}`);
 		if (res.status === 200) {
 			filterProducts(id);
 		}
 	};
 
-	const onUpdate = async ({ detail: { product } }) => {
+	const onUpdate = async ({ detail: { product, image } }) => {
+		if (image) {
+			oneAlertInfo('Uploading Image...');
+			const formData = new FormData();
+			formData.append('file', image);
+
+			const photoRes = await fetch(`/products/api/photo_${product.id}`, {
+				method: 'POST',
+				body: formData
+			});
+
+			if (photoRes.ok) {
+				oneAlertSuccess('Image uploaded...');
+			}
+		}
 		product.image = undefined;
-		const data = await fetch(`products/api/update_${product.id}}`, {
+
+		const data = await fetch(`/products/api/update_${product.id}`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify(product)
 		});
-		updateProduct(data);
+		const productReturned = await data.json();
+
+		updateProduct(productReturned);
 		productToEdit = undefined;
 	};
 

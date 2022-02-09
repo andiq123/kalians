@@ -8,6 +8,15 @@
 	const dispatch = createEventDispatcher();
 	let loading = false;
 
+	let image;
+	let photoSrc;
+
+	const uploadedFile = (e) => {
+		const file = e.target.files[0];
+		image = file;
+		photoSrc = URL.createObjectURL(file);
+	};
+
 	$: formValid = Object.values(product).every((value) => {
 		if (typeof value === 'string') {
 			return value.length > 0 && value !== '0';
@@ -36,10 +45,10 @@
 </script>
 
 <div class="modal modal-open" transition:fade>
-	<div class="modal-box" use:clickOutside on:outclick={() => dispatch('close')} transition:scale>
+	<div class="modal-box" transition:scale>
 		<form
 			class="form flex flex-col gap-5"
-			on:submit|preventDefault={() => dispatch('update', { product })}
+			on:submit|preventDefault={() => dispatch('update', { product, image })}
 			enctype="multipart/form-data"
 		>
 			<div class="form-control">
@@ -102,7 +111,7 @@
 					<!-- svelte-ignore a11y-img-redundant-alt -->
 					<img
 						class="h-16 w-16 object-cover rounded-full"
-						src={product.image || '/no-product-image.png'}
+						src={photoSrc || product.image || '/no-product-image.png'}
 						alt="Current profile photo"
 					/>
 				</div>
@@ -117,6 +126,7 @@
 									file:bg-violet-50 file:text-violet-700
 									hover:file:bg-violet-100
 									 "
+						on:change={uploadedFile}
 					/>
 				</label>
 			</div>
