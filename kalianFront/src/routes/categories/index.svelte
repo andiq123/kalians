@@ -25,7 +25,7 @@
 
 <script>
 	import CreateModal from '$lib/categories/create-modal.svelte';
-	import Category from '$lib/categories/Category.svelte';
+	import Category from '$lib/categories/category.svelte';
 	import { fly } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	export let categories = [];
