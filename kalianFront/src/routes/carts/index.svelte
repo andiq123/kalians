@@ -14,7 +14,7 @@
 				}
 			};
 		}
-		
+
 		if (res.status === 401) {
 			return {
 				status: 301,
@@ -51,7 +51,7 @@
 
 	const onSubmit = async ({ detail: { id } }) => {
 		SetItemLoading(id);
-		const cart = await fetch(`/carts/complete_${id}}`);
+		const cart = await fetch(`/carts/complete_${id}`);
 		updateCart(cart);
 	};
 
