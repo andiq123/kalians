@@ -11,4 +11,7 @@
 <script>
 </script>
 
-<h1>Hello from index</h1>
+<div class="card w-fit mx-auto">
+	<div class="card-title">Welcome to kalians</div>
+	<div class="card-body">Use the navigation bar to navigate around the site.</div>
+</div>
