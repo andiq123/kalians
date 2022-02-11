@@ -212,18 +212,20 @@ export class AppUpdate {
     const { phone_number, first_name, user_id } = ctx.update.message.contact;
 
     await this.cartService.setPhoneAndClient(user_id, first_name, phone_number);
-    await ctx.reply(Messages.ContactAccepted, {
-      reply_markup: {
-        resize_keyboard: true,
-        keyboard: [
-          [
-            { text: Messages.SendOrder },
-            { text: Messages.ListProducts },
-            { text: Messages.ShowCart },
-          ],
-        ],
-      },
-    });
+    const id = ctx.update.message.from.id;
+    await this.handleCheckOut(id, ctx);
+    // await ctx.reply(Messages.ContactAccepted, {
+    //   reply_markup: {
+    //     resize_keyboard: true,
+    //     keyboard: [
+    //       [
+    //         { text: Messages.SendOrder },
+    //         { text: Messages.ListProducts },
+    //         { text: Messages.ShowCart },
+    //       ],
+    //     ],
+    //   },
+    // });
   }
 
   @Hears(Messages.SendOrder)
