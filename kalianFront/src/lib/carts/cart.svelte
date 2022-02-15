@@ -29,10 +29,10 @@
 				<span class="font-bold">Total Price:</span>
 				{cart.totalPrice} Lei
 			</p>
-			<p class="capitalize"><span class="font-bold">Client:</span> {cart.clientName}</p>
+			<p class="capitalize"><span class="font-bold">Client:</span> "John Doe"</p>
 			<p class="font-light capitalize">
 				<span class="font-bold">Phone:</span>
-				{cart.phoneNumber}
+				'123456'
 			</p>
 		</div>
 	</div>

@@ -6,15 +6,11 @@
 		httpParams.append('id', url.searchParams.get('id') || '');
 
 		const res = await fetch(`/carts/api?${httpParams.toString()}`);
-		const pagedItems = await res.json();
-		pagedItems.items = pagedItems.items.map((item) => {
-			item.phoneNumber = '1234567890';
-			return item;
-		});
+
 		if (res.ok) {
 			return {
 				props: {
-					pagedResult: pagedItems
+					pagedResult: await res.json()
 				}
 			};
 		}
@@ -39,7 +35,7 @@
 	import { flip } from 'svelte/animate';
 	import Cart from '$lib/carts/cart.svelte';
 
-	export let pagedResult = {};
+	export let pagedResult;
 
 	const SetItemLoading = (id) => {
 		pagedResult = {
@@ -65,7 +61,6 @@
 			...pagedResult,
 			items: pagedResult.items.map((x) => {
 				if (x.id === cart.id) {
-					x.phoneNumber = '1234567890';
 					return cart;
 				}
 				return x;
