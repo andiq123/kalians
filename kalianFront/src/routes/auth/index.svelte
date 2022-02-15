@@ -5,7 +5,7 @@
 		if (!isFromRedirect && session['user']) {
 			return {
 				status: 301,
-				redirect: '/products/redirect'
+				redirect: '/products'
 			};
 		} else {
 			return {
