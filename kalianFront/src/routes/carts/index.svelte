@@ -18,7 +18,7 @@
 		if (res.status === 401) {
 			return {
 				status: 301,
-				redirect: '/auth'
+				redirect: '/auth?redirect=true'
 			};
 		}
 
@@ -73,8 +73,8 @@
 	<title>Carts</title>
 </svelte:head>
 
-<div class="grid grid-rows-1 mx-auto p-5" in:fly={{ y: -30 }}>
-	<div class="flex flex-row flex-wrap gap-10">
+<div class="grid grid-rows-1 mx-auto p-5 mb-20 lg:mb-0" in:fly={{ y: -30 }}>
+	<div class="flex flex-row flex-wrap gap-10 justify-center">
 		{#each pagedResult.items as cart (cart.id)}
 			<div animate:flip>
 				<Cart {cart} on:submit={onSubmit} />

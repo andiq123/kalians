@@ -1,12 +1,11 @@
 <script context="module">
-	/**
-	 * @type {import('@sveltejs/kit').Load}
-	 */
-	export async function load({ session }) {
-		if (!!session) {
+	/**	 * @type {import('@sveltejs/kit').Load} */
+	export async function load({ session, url }) {
+		const isFromRedirect = url.searchParams.get('redirect');
+		if (!isFromRedirect && session['user']) {
 			return {
 				status: 301,
-				redirect: '/products'
+				redirect: '/products/redirect'
 			};
 		} else {
 			return {
@@ -42,7 +41,7 @@
 			loading = false;
 			oneAlertSuccess('Login Successful');
 			const data = await res.json();
-			session.update((x) => data.token);
+			session.update((x) => ({ token: data.token, user: true }));
 			goto('/products');
 		} else {
 			loading = false;
@@ -61,7 +60,7 @@
 </script>
 
 <form
-	class="form mx-auto mt-5"
+	class="form mx-auto mt-5 "
 	on:submit|preventDefault={onSubmit}
 	enctype="multipart/form-data"
 	in:fly={{ y: -30 }}

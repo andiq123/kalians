@@ -16,7 +16,7 @@
 		if (res.status === 401) {
 			return {
 				status: 301,
-				redirect: '/auth'
+				redirect: '/auth?redirect=true'
 			};
 		}
 
@@ -118,7 +118,7 @@
 	<p>No categories found</p>
 {:else}
 	<form
-		class="form mx-auto mt-5"
+		class="form mx-auto mt-5 w-min mb-20 lg:mb-0"
 		on:submit|preventDefault={onSubmit}
 		enctype="multipart/form-data"
 		in:fly={{ y: -30 }}

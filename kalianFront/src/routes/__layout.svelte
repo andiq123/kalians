@@ -8,7 +8,7 @@
 	<Alert />
 </header>
 
-<main class="flex">
-	<Sidebar />
+<main class="lg:flex">
+		<Sidebar />
 	<slot />
 </main>

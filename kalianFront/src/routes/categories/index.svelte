@@ -12,7 +12,7 @@
 		if (res.status === 401) {
 			return {
 				status: 301,
-				redirect: '/auth'
+				redirect: '/auth?redirect=true'
 			};
 		}
 

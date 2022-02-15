@@ -18,7 +18,7 @@
 		if (res.status === 401) {
 			return {
 				status: 301,
-				redirect: '/auth'
+				redirect: '/auth?redirect=true'
 			};
 		}
 		return {
@@ -133,8 +133,8 @@
 	{/each}
 </svelte:head>
 
-<div class="mx-auto mb-10 h-min mt-2 p-0 " in:fly={{ y: -20, duration: 200 }}>
-	<div class="flex flex-rows gap-10 h-min">
+<div class="mx-auto lg:mb-10 h-min mt-2 p-0 mb-32" in:fly={{ y: -20, duration: 200 }}>
+	<div class="flex flex-rows gap-10 h-min justify-center">
 		{#each pagedResult.items as product (product.id)}
 			<div animate:flip class="w-min">
 				<Product

@@ -25,7 +25,7 @@
 	import { goto } from '$app/navigation';
 
 	onMount(() => {
-		session.update(() => null);
-		goto('/auth');
+		session.update(() => ({ token: null, user: false }));
+		goto('/auth?redirect=true');
 	});
 </script>
