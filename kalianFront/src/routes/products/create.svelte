@@ -118,12 +118,12 @@
 	<p>No categories found</p>
 {:else}
 	<form
-		class="form mx-auto mt-5 w-min mb-20 lg:mb-0"
+		class="form mx-auto lg:mt-5 w-min mb-24 lg:mb-0"
 		on:submit|preventDefault={onSubmit}
 		enctype="multipart/form-data"
 		in:fly={{ y: -30 }}
 	>
-		<div class="p-10 card bg-base-200 gap-5">
+		<div class="p-5 lg:p-10 card bg-base-200 gap-5">
 			<div class="form-control">
 				<label class="label" for="username">
 					<span class="label-text">Name</span>
