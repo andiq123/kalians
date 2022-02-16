@@ -42,14 +42,26 @@
 			{/key}
 		</p>
 
-		<div class="justify-center card-actions w-full">
+		<div class="justify-center card-actions w-30">
 			<div class="flex gap-5">
-				<button class="btn btn-primary" on:click={() => dispatch('increment', { id: product.id })}
-					><i class="fas fa-plus" /></button
+				<button
+					class="btn btn-primary w-16 text-center"
+					class:loading={product.loadingIncrement}
+					on:click={() => dispatch('increment', { id: product.id })}
 				>
-				<button class="btn" on:click={() => dispatch('decrement', { id: product.id })}
-					><i class="fas fa-minus" /></button
+					{#if !product.loadingIncrement}
+						<i class="fas fa-plus" />
+					{/if}</button
 				>
+				<button
+					class="btn w-16"
+					class:loading={product.loadingDecrement}
+					on:click={() => dispatch('decrement', { id: product.id })}
+				>
+					{#if !product.loadingDecrement}
+						<i class="fas fa-minus" />
+					{/if}
+				</button>
 			</div>
 
 			<button class="btn btn-outline w-full" on:click={() => dispatch('editProduct', { product })}

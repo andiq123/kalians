@@ -45,14 +45,28 @@
 	};
 
 	const increment = async ({ detail: { id } }) => {
+		const product = pagedResult.items.find((p) => p.id === id);
+		product.loadingIncrement = true;
+		pagedResult = pagedResult;
+
 		const res = await fetch(`/products/api/${id}_increment`);
 		const incrementedProduct = await res.json();
+
+		product.loadingIncrement = false;
+		pagedResult = pagedResult;
+
 		updateProduct(incrementedProduct);
 	};
 
 	const decrement = async ({ detail: { id } }) => {
+		const product = pagedResult.items.find((p) => p.id === id);
+		product.loadingDecrement = true;
+		pagedResult = pagedResult;
 		const res = await fetch(`/products/api/${id}_decrement`);
 		const incrementedProduct = await res.json();
+
+		product.loadingDecrement = false;
+		pagedResult = pagedResult;
 		updateProduct(incrementedProduct);
 	};
 
