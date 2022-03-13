@@ -15,7 +15,7 @@
 			<div class="divide-y my-5">
 				{#each cart.cartItems as cartItem (cartItem.id)}
 					<div class="flex flex-row justify-between my-2">
-						<p>Produs: <span class="capitalize">{cartItem.product?.name}</span></p>
+						<p>Produs: <span class="capitalize">{cartItem.product?.name} </span></p>
 						<p>
 							Pret: {cartItem.product?.price} Lei x{cartItem.quantity} = {cartItem.product?.price *
 								cartItem.quantity} Lei
